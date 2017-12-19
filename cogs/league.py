@@ -24,7 +24,6 @@ class League:
             'RU': 'ru',
             'PBE': 'pbe1'
         }
-        self.static_champ_data = None
 
     @commands.command()
     async def status(self, ctx, region='NA'):
