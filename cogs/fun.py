@@ -1,4 +1,3 @@
-import aiohttp
 import random
 import discord
 from discord.ext import commands
@@ -10,16 +9,14 @@ class Fun:
     @commands.command()
     async def xkcd(self, ctx):
         """See the latest XKCD comic."""
-        async with aiohttp.ClientSession() as session:
-            async with session.get('https://xkcd.com/info.0.json') as r:
-                if r.status == 200:
-                    json = await r.json()
-                    embed = discord.Embed(title=json['title'],
-                                          description=json['alt'],
-                                          color=0xff4d4d)
-                    embed.set_image(url=json['img'])
-                    await ctx.send(embed=embed)
-                session.close()
+        async with self.bot.session.get('https://xkcd.com/info.0.json') as r:
+            if r.status == 200:
+                json = await r.json()
+                embed = discord.Embed(title=json['title'],
+                                      description=json['alt'],
+                                      color=0xff4d4d)
+                embed.set_image(url=json['img'])
+                await ctx.send(embed=embed)
 
     @commands.command()
     async def lenny(self, ctx):

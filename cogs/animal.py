@@ -1,5 +1,4 @@
 from datetime import datetime
-import aiohttp
 import discord
 from discord.ext import commands
 
@@ -27,8 +26,8 @@ class Animal:
                 if r.status == 200:
                     json = await r.json()
                     img = json['url']
-                    # Sometimes the API returns .mp4 files, which
-                    # can't be used in embeds.
+                    # Sometimes the API returns .mp4 files, which can't be used
+                    # in embeds.
                     if img.endswith('.mp4'):
                         img = None
                         continue
