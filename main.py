@@ -17,15 +17,17 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print(f'You are currently logged in as {bot.user}.')
 
+    def load_extensions(self):
+        for file in os.listdir('cogs'):
+            if file.endswith('.py'):
+                ext = file[:-3]
+                try:
+                    self.load_extension(f'cogs.{ext}')
+                except Exception as e:
+                    print(f'Failed to load extension {ext}: {e}')
+
+
 if __name__ == '__main__':
     bot = Bot(command_prefix='-', config=config)
-
-    for file in os.listdir('cogs'):
-        if file.endswith('.py'):
-            ext = file[:-3]
-            try:
-                bot.load_extension(f'cogs.{ext}')
-            except Exception as e:
-                print(f'Failed to load extension {ext}: {e}')
-
+    bot.load_extensions()
     bot.run(bot.config['discord'])
