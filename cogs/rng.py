@@ -1,7 +1,7 @@
 import random
 from discord.ext import commands
 
-class Random:
+class RNG:
     """Commands of random chance."""
     def __init__(self, bot):
         self.bot = bot
@@ -19,4 +19,4 @@ class Random:
         await ctx.send(f'You flipped {flipped}!')
 
 def setup(bot):
-    bot.add_cog(Random(bot))
+    bot.add_cog(RNG(bot))
