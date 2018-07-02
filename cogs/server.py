@@ -28,5 +28,15 @@ class Server:
         embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
 
+    @commands.command()
+    @commands.guild_only()
+    async def avatar(self, ctx, member: discord.Member):
+        """Get someone's avatar."""
+        avatar = member.avatar_url
+        embed = discord.Embed(title=member.name, colour=0x117711)
+        embed.set_image(url=avatar)
+        await ctx.send(embed=embed)
+
+
 def setup(bot):
     bot.add_cog(Server(bot))
