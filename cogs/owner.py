@@ -47,14 +47,6 @@ class Owner:
             return
         await ctx.send(f'{extension} has been successfully unloaded.')
 
-    @commands.command(aliases=['reboot'])
-    @commands.is_owner()
-    async def restart(self, ctx):
-        """Restarts the bot."""
-        print('Bot reboot has been initiated.')
-        await self.bot.logout()
-        subprocess.call([sys.executable, 'main.py'])
-
     @commands.command(name='config')
     @commands.is_owner()
     async def reload_config_file(self, ctx, file):
