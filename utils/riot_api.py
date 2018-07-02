@@ -2,39 +2,46 @@ import aiohttp
 
 class RiotApi:
     def __init__(self, api_key):
-        self.api_key = api_key
-        self.base_url = 'https://{}.api.riotgames.com{}'
+        self.API_KEY = api_key
+        self.BASE_URL = 'https://{}.api.riotgames.com/lol/{}'
 
     async def _request(self, platform, endpoint, **kwargs):
-        url = self.base_url.format(platform, endpoint)
+        url = self.BASE_URL.format(platform, endpoint)
         params = {k: v for k, v in kwargs.items() if v is not None}
-        params['api_key'] = self.api_key
+        params['api_key'] = self.API_KEY
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as r:
                 return await r.json()
 
-    async def get_status(self, platform):
-        endpoint = '/lol/status/v3/shard-data'
-        return await self._request(platform, endpoint)
-
-    async def get_champions(self, platform, free_to_play=False):
-        endpoint= '/lol/platform/v3/champions'
+    async def get_all_champions(self, platform, free_to_play=False):
+        endpoint = 'platform/v3/champions'
         return await self._request(platform,
                                    endpoint,
                                    freeToPlay=str(free_to_play).lower()
         )
 
-    async def get_champions_from_static_data(self, platform, data_by_id=False):
-        endpoint = '/lol/static-data/v3/champions'
+    async def get_champion_by_id(self, platform, champion_id):
+        endpoint = 'platform/v3/champions/' + str(champion_id)
         return await self._request(platform,
-                                   endpoint,
-                                   dataById=str(data_by_id).lower()
+                                   endpoint
+        )
+
+    async def get_league_by_summoner_id(self, platform, summoner_id):
+        endpoint = 'league/v3/positions/by-summoner/' + str(summoner_id)
+        return await self._request(platform,
+                                   endpoint
+        )
+
+    async def get_lol_status(self, platform):
+        endpoint = 'status/v3/shard-data'
+        return await self._request(platform,
+                                   endpoint
         )
 
 class StaticApi:
     def __init__(self):
-        self.base_url = 'https://ddragon.leagueoflegends.com/cdn/{}/data/{}/{}'
-        self.realms_url = 'https://ddragon.leagueoflegends.com/realms/{}.json'
+        self.BASE_URL = 'https://ddragon.leagueoflegends.com/cdn/{}/data/{}/{}'
+        self.REALMS_URL = 'https://ddragon.leagueoflegends.com/realms/{}.json'
 
     async def _request(self, url):
         async with aiohttp.ClientSession() as session:
@@ -45,10 +52,10 @@ class StaticApi:
         info = await self.get_realm_info(region)
         version = info['n']['champion']
         locale = info['l']
-        url = self.base_url.format(version, locale, 'champion.json')
+        url = self.BASE_URL.format(version, locale, 'champion.json')
         return await self._request(url)
 
     async def get_realm_info(self, region):
         region = region.lower()
-        url = 'https://ddragon.leagueoflegends.com/realms/{}.json'.format(region)
+        url = self.REALMS_URL.format(region)
         return await self._request(url)

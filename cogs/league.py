@@ -29,8 +29,9 @@ class League:
     async def status(self, ctx, region='NA'):
         """Check if the League of Legends servers are up."""
         platform = self.regions[region.upper()]
+
         try:
-            json = await self.api.get_status(platform)
+            json = await self.api.get_lol_status(platform)
         except KeyError:
             return await self.send_invalid_region(ctx)
 
@@ -45,6 +46,7 @@ class League:
             else:
                 status = ':x: Offline'
             embed.add_field(name=name, value=status)
+
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -53,7 +55,7 @@ class League:
         region = region.upper()
         platform = self.regions[region]
         try:
-            json = await self.api.get_champions(platform, free_to_play=True)
+            json = await self.api.get_all_champions(platform, free_to_play=True)
         except KeyError:
             return await self.send_invalid_region(ctx)
 
@@ -65,6 +67,7 @@ class League:
         embed = discord.Embed(timestamp=datetime.utcnow(), colour=0x117711)
         embed.add_field(name='League of Legends Free Champion Rotation',
                         value='\n'.join(names))
+
         await ctx.send(embed=embed)
 
     async def send_invalid_region(self, ctx):
