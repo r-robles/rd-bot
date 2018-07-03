@@ -1,5 +1,4 @@
 import json
-import subprocess
 import sys
 from discord.ext import commands
 
