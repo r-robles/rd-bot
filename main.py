@@ -2,6 +2,7 @@ import datetime
 import os
 import json
 import aiohttp
+import discord
 from discord.ext import commands
 
 config = json.load(open('config.json'))
@@ -16,6 +17,9 @@ class Bot(commands.Bot):
 
     async def on_ready(self):
         print(f'You are currently logged in as {bot.user}.')
+
+        game = discord.Game('-help')
+        await self.change_presence(activity=game)
 
     def load_extensions(self):
         for file in os.listdir('cogs'):
