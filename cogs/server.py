@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from utils.converters import InsensitiveMemberConverter
 
 class Server:
     """Server related commands."""
@@ -30,7 +31,7 @@ class Server:
 
     @commands.command()
     @commands.guild_only()
-    async def avatar(self, ctx, member: discord.Member):
+    async def avatar(self, ctx, *, member: InsensitiveMemberConverter):
         """Get someone's avatar."""
         avatar = member.avatar_url
         embed = discord.Embed(title=member.name, colour=0x117711)
