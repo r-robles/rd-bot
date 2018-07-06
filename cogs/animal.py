@@ -11,7 +11,7 @@ class Animal:
     @commands.command()
     async def cat(self, ctx):
         """Meow!"""
-        async with self.bot.session.get('http://random.cat/meow') as r:
+        async with self.bot.session.get('http://aws.random.cat/meow') as r:
             if r.status == 200:
                 json = await r.json()
                 img = json['file']
