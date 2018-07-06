@@ -1,6 +1,7 @@
 import random
 import discord
 from discord.ext import commands
+from utils.messages import ColoredEmbed
 
 class Fun:
     def __init__(self, bot):
@@ -12,9 +13,8 @@ class Fun:
         async with self.bot.session.get('https://xkcd.com/info.0.json') as r:
             if r.status == 200:
                 json = await r.json()
-                embed = discord.Embed(title=json['title'],
-                                      description=json['alt'],
-                                      color=0xff4d4d)
+                embed = ColoredEmbed(title=json['title'],
+                                      description=json['alt'])
                 embed.set_image(url=json['img'])
                 await ctx.send(embed=embed)
 

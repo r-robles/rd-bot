@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from utils.converters import InsensitiveMemberConverter
+from utils.messages import ColoredEmbed
 
 class Server:
     """Server related commands."""
@@ -12,7 +13,7 @@ class Server:
     async def serverinfo(self, ctx):
         """Get information about the server."""
         guild = ctx.guild
-        embed = discord.Embed(title=guild.name, colour=0x117711)
+        embed = ColoredEmbed(title=guild.name)
         embed.add_field(name='ID', value=guild.id)
         embed.add_field(name='Server Region', value=guild.region)
         embed.add_field(name='Members', value=guild.member_count)
@@ -34,7 +35,7 @@ class Server:
     async def avatar(self, ctx, *, member: InsensitiveMemberConverter):
         """Get someone's avatar."""
         avatar = member.avatar_url
-        embed = discord.Embed(title=member.name, colour=0x117711)
+        embed = ColoredEmbed(title=member.name)
         embed.set_image(url=avatar)
         await ctx.send(embed=embed)
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 import discord
 from discord.ext import commands
+from utils.messages import ColoredEmbed
 
 class Animal:
     """Some cute animals."""
@@ -31,12 +32,12 @@ class Animal:
                     if img.endswith('.mp4'):
                         img = None
                         continue
-                    else:                                   
+                    else:
                         embed = self._create_embed(img)
                         await ctx.send(embed=embed)
 
     def _create_embed(self, img: str):
-        embed = discord.Embed(colour=0x117711)
+        embed = ColoredEmbed()
         embed.set_image(url=img)
         return embed
 
