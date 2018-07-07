@@ -43,7 +43,7 @@ class Bot(commands.Bot):
 
     @property
     def ram_percentage(self):
-        return self.ram_usage / psutil.virtual_memory().total
+        return self.ram_usage / (psutil.virtual_memory().total / 1024 ** 2)
 
 if __name__ == '__main__':
     bot = Bot(command_prefix='-', config=config)
