@@ -1,3 +1,4 @@
+import psutil
 from datetime import datetime
 from discord.ext import commands
 from utils.messages import ColoredEmbed, MessageUtils
@@ -23,12 +24,16 @@ class Misc:
         bot_user = self.bot.user
         app = await self.bot.application_info()
 
+        cpu_usage = self.bot.process.cpu_percent() / psutil.cpu_count()
+        ram_usage = self.bot.process.memory_full_info().uss / 1024 ** 2
+        ram_percentage = 100 * (ram_usage / (psutil.virtual_memory().total / 1024 ** 2))
+
         bot_name = f'{bot_user.name}#{bot_user.discriminator}'
         owner = f'{app.owner.name}#{app.owner.discriminator}'
         num_servers = str(len(self.bot.guilds))
         num_members = str(len(self.bot.users))
-        cpu_usage = f'{self.bot.cpu_percentage:.2f}%'
-        ram_usage = f'{self.bot.ram_usage:.2f} MiB ({self.bot.ram_percentage:.2f}%)'
+        cpu_usage_stat = f'{cpu_usage:.2f}%'
+        ram_usage_stat = f'{ram_usage:.2f} MiB ({ram_percentage:.2f}%)'
         uptime = MessageUtils.convert_time_delta(datetime.utcnow(), self.bot.startup_time)
 
         embed = ColoredEmbed()
@@ -36,8 +41,8 @@ class Misc:
         embed.add_field(name='Owner', value=owner, inline=False)
         embed.add_field(name='Servers', value=num_servers, inline=False)
         embed.add_field(name='Members', value=num_members)
-        embed.add_field(name='CPU Usage', value=cpu_usage, inline=False)
-        embed.add_field(name='RAM Usage', value=ram_usage, inline=False)
+        embed.add_field(name='CPU Usage', value=cpu_usage_stat, inline=False)
+        embed.add_field(name='RAM Usage', value=ram_usage_stat, inline=False)
         embed.add_field(name='Uptime', value=uptime, inline=False)
 
         await ctx.send(embed=embed)

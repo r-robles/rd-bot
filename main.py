@@ -33,17 +33,6 @@ class Bot(commands.Bot):
                 except Exception as e:
                     print(f'Failed to load extension {ext}: {e}')
 
-    @property
-    def cpu_percentage(self):
-        return self.process.cpu_percent() / psutil.cpu_count()
-
-    @property
-    def ram_usage(self):
-        return self.process.memory_full_info().uss / 1024 ** 2
-
-    @property
-    def ram_percentage(self):
-        return self.ram_usage / (psutil.virtual_memory().total / 1024 ** 2)
 
 if __name__ == '__main__':
     bot = Bot(command_prefix='-', config=config)
