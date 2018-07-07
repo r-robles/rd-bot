@@ -15,16 +15,15 @@ class Server:
         guild = ctx.guild
         embed = ColoredEmbed(title=guild.name)
         embed.add_field(name='ID', value=guild.id)
+        embed.add_field(name='Owner', value=f'{guild.owner.name}#{guild.owner.discriminator}')
         embed.add_field(name='Server Region', value=guild.region)
         embed.add_field(name='Members', value=guild.member_count)
-        voice = len(guild.voice_channels)
-        text = len(guild.text_channels)
-        embed.add_field(name='Channels',
-                        value=f'{voice + text} channels: {voice} voice, {text} text')
-        embed.add_field(name='Owner', value=f'{guild.owner.name}#{guild.owner.discriminator}')
-        roles = list(map(lambda x: x.name if x.name != '@everyone' else '@\u200beveryone',
-                         guild.roles))
-        embed.add_field(name='Roles', value=', '.join(roles))
+        embed.add_field(name='Text Channels',
+                        value=f'{len(guild.text_channels)}')
+        embed.add_field(name='Voice Channels',
+                        value=f'{len(guild.voice_channels)}')
+        roles = [role.name for role in guild.roles if role.name != '@everyone']
+        embed.add_field(name='Roles', value=', '.join(roles), inline=False)
         create_time = guild.created_at.strftime('%B %d, %Y at %H:%M:%S UTC')
         embed.set_footer(text=f'Created on {create_time}')
         embed.set_thumbnail(url=guild.icon_url)
