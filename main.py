@@ -3,6 +3,7 @@ import os
 import json
 import aiohttp
 import discord
+import psutil
 from discord.ext import commands
 
 config = json.load(open('config.json'))
@@ -13,6 +14,8 @@ class Bot(commands.Bot):
 
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.config = config
+
+        self.process = psutil.Process()
         self.startup_time = datetime.datetime.utcnow()
 
     async def on_ready(self):
@@ -30,6 +33,17 @@ class Bot(commands.Bot):
                 except Exception as e:
                     print(f'Failed to load extension {ext}: {e}')
 
+    @property
+    def cpu_percentage(self):
+        return self.process.cpu_percent() / psutil.cpu_count()
+
+    @property
+    def ram_usage(self):
+        return self.process.memory_full_info().uss / 1024 ** 2
+
+    @property
+    def ram_percentage(self):
+        return self.ram_usage / psutil.virtual_memory().total
 
 if __name__ == '__main__':
     bot = Bot(command_prefix='-', config=config)
