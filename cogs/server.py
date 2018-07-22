@@ -36,8 +36,9 @@ class Server:
     @commands.guild_only()
     async def avatar(self, ctx, *, member: InsensitiveMemberConverter):
         """Get someone's avatar."""
-        avatar = member.avatar_url
-        embed = ColoredEmbed(title=member.name)
+        avatar = member.avatar_url_as(static_format='png')
+        embed = ColoredEmbed()
+        embed.set_author(name=member, icon_url=avatar)
         embed.set_image(url=avatar)
         await ctx.send(embed=embed)
 
