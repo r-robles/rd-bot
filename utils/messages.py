@@ -1,6 +1,7 @@
 import datetime
 import discord
 
+
 class MessageUtils:
 
     @staticmethod
@@ -22,6 +23,7 @@ class MessageUtils:
         if minutes > 0:
             return f'{minutes} {minutes_text}, {seconds} {seconds_text}'
         return f'{seconds} {seconds_text}'
+
 
 class ColoredEmbed(discord.Embed):
     def __init__(self, **kwargs):

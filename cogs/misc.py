@@ -3,8 +3,10 @@ from datetime import datetime
 from discord.ext import commands
 from utils.messages import ColoredEmbed, MessageUtils
 
+
 class Misc:
     """Miscellaneous commands."""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -26,7 +28,8 @@ class Misc:
 
         cpu_usage = self.bot.process.cpu_percent() / psutil.cpu_count()
         ram_usage = self.bot.process.memory_full_info().uss / 1024 ** 2
-        ram_percentage = 100 * (ram_usage / (psutil.virtual_memory().total / 1024 ** 2))
+        ram_percentage = 100 * \
+            (ram_usage / (psutil.virtual_memory().total / 1024 ** 2))
 
         bot_name = f'{bot_user.name}#{bot_user.discriminator}'
         owner = f'{app.owner.name}#{app.owner.discriminator}'
@@ -34,7 +37,8 @@ class Misc:
         num_members = str(len(self.bot.users))
         cpu_usage_stat = f'{cpu_usage:.2f}%'
         ram_usage_stat = f'{ram_usage:.2f} MiB ({ram_percentage:.2f}%)'
-        uptime = MessageUtils.convert_time_delta(datetime.utcnow(), self.bot.startup_time)
+        uptime = MessageUtils.convert_time_delta(
+            datetime.utcnow(), self.bot.startup_time)
 
         embed = ColoredEmbed()
         embed.set_author(name=bot_name, icon_url=bot_user.avatar_url)
@@ -46,6 +50,7 @@ class Misc:
         embed.add_field(name='Uptime', value=uptime, inline=False)
 
         await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))

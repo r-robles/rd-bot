@@ -4,6 +4,7 @@ from discord.ext import commands
 
 class Mod:
     """Commands for managing the server."""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -39,6 +40,7 @@ class Mod:
         messages_deleted = await ctx.channel.purge(limit=limit, before=ctx.message)
         await ctx.send(f'Deleted {len(messages_deleted)} message(s)!', delete_after=10)
         await ctx.message.delete()
+
 
 def setup(bot):
     bot.add_cog(Mod(bot))

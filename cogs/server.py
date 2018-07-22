@@ -3,8 +3,10 @@ from discord.ext import commands
 from utils.converters import InsensitiveMemberConverter
 from utils.messages import ColoredEmbed
 
+
 class Server:
     """Server related commands."""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -15,7 +17,8 @@ class Server:
         guild = ctx.guild
         embed = ColoredEmbed(title=guild.name)
         embed.add_field(name='ID', value=guild.id)
-        embed.add_field(name='Owner', value=f'{guild.owner.name}#{guild.owner.discriminator}')
+        embed.add_field(
+            name='Owner', value=f'{guild.owner.name}#{guild.owner.discriminator}')
         embed.add_field(name='Server Region', value=guild.region)
         embed.add_field(name='Members', value=guild.member_count)
         embed.add_field(name='Text Channels',

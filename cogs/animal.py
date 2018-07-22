@@ -3,8 +3,10 @@ import discord
 from discord.ext import commands
 from utils.messages import ColoredEmbed
 
+
 class Animal:
     """Some cute animals."""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -40,6 +42,7 @@ class Animal:
         embed = ColoredEmbed()
         embed.set_image(url=img)
         return embed
+
 
 def setup(bot):
     bot.add_cog(Animal(bot))

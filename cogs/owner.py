@@ -53,5 +53,6 @@ class Owner:
         self.bot.config = json.load(open(file))
         await ctx.send('Your configuration file has been reloaded.')
 
+
 def setup(bot):
     bot.add_cog(Owner(bot))

@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from utils.messages import ColoredEmbed
 
+
 class Fun:
     def __init__(self, bot):
         self.bot = bot
@@ -14,7 +15,7 @@ class Fun:
             if r.status == 200:
                 json = await r.json()
                 embed = ColoredEmbed(title=json['title'],
-                                      description=json['alt'])
+                                     description=json['alt'])
                 embed.set_image(url=json['img'])
                 await ctx.send(embed=embed)
 
@@ -22,6 +23,7 @@ class Fun:
     async def lenny(self, ctx):
         """( ͡° ͜ʖ ͡°)"""
         await ctx.send('( ͡° ͜ʖ ͡°)')
+
 
 def setup(bot):
     bot.add_cog(Fun(bot))
