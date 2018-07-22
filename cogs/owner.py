@@ -46,13 +46,6 @@ class Owner:
             return
         await ctx.send(f'{extension} has been successfully unloaded.')
 
-    @commands.command(name='config')
-    @commands.is_owner()
-    async def reload_config_file(self, ctx, file):
-        """Reloads your configuration file."""
-        self.bot.config = json.load(open(file))
-        await ctx.send('Your configuration file has been reloaded.')
-
 
 def setup(bot):
     bot.add_cog(Owner(bot))
