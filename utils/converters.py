@@ -1,4 +1,4 @@
-from discord.ext.commands import MemberConverter
+from discord.ext.commands import Converter, MemberConverter
 from discord import utils
 
 
@@ -14,3 +14,8 @@ class InsensitiveMemberConverter(MemberConverter):
             if result:
                 return result
             raise e
+
+
+class ReasonConverter(Converter):
+    async def convert(self, ctx, argument):
+        return f'Executed by {ctx.author} ({ctx.author.id}). Reason: {argument}'
