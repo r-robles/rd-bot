@@ -5,7 +5,7 @@ import discord
 class MessageUtils:
 
     @staticmethod
-    def convert_time_delta(end, start):
+    def convert_time_delta(end: datetime, start: datetime):
         delta = end - start
         hours, remainder = divmod(int(delta.total_seconds()), 3600)
         minutes, seconds = divmod(remainder, 60)
@@ -23,6 +23,10 @@ class MessageUtils:
         if minutes > 0:
             return f'{minutes} {minutes_text}, {seconds} {seconds_text}'
         return f'{seconds} {seconds_text}'
+
+    @staticmethod
+    def convert_time(time: datetime):
+        return time.strftime('%B %d, %Y at %H:%M:%S UTC')
 
 
 class ColoredEmbed(discord.Embed):
