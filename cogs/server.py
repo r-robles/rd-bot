@@ -34,8 +34,10 @@ class Server:
 
     @commands.command()
     @commands.guild_only()
-    async def avatar(self, ctx, *, member: InsensitiveMemberConverter):
+    async def avatar(self, ctx, *, member: InsensitiveMemberConverter = None):
         """Get someone's avatar."""
+        if member is None:
+            member = ctx.author
         avatar = member.avatar_url_as(static_format='png')
         embed = ColoredEmbed()
         embed.set_author(name=member, icon_url=avatar)
@@ -45,6 +47,8 @@ class Server:
     @commands.command()
     @commands.guild_only()
     async def userinfo(self, ctx, *, member: InsensitiveMemberConverter = None):
+        if member is None:
+            member = ctx.author
         """Get information about a user."""
         embed = ColoredEmbed()
         embed.set_author(name=member, icon_url=member.avatar_url)
