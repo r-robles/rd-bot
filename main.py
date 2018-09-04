@@ -1,12 +1,14 @@
+import configparser
 import datetime
 import os
-import json
 import aiohttp
 import discord
 import psutil
 from discord.ext import commands
 
-config = json.load(open('config.json'))
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 
 class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
@@ -37,4 +39,4 @@ class Bot(commands.Bot):
 if __name__ == '__main__':
     bot = Bot(command_prefix='-', config=config)
     bot.load_extensions()
-    bot.run(bot.config['discord'])
+    bot.run(config['Discord']['token'])

@@ -1,0 +1,8 @@
+[Discord]
+token = your Discord token
+
+[PostgreSQL]
+user = username
+password = password
+database = some_database
+host = localhost
