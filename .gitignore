@@ -108,3 +108,6 @@ config.json
 
 # VSCode Settings
 .vscode
+
+fgo.py
+db/
