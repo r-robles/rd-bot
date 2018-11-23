@@ -14,10 +14,10 @@ class Mod:
     @commands.guild_only()
     async def kick(self, ctx, user: discord.Member, *, reason: ReasonConverter = None):
         """Kick a user from the server."""
-        if user.top_role > ctx.author.top_role:
+        if user.top_role >= ctx.author.top_role:
             await ctx.send('You cannot kick someone with a higher role than you.')
             return
-        if user.top_role > ctx.me.top_role:
+        if user.top_role >= ctx.me.top_role:
             await ctx.send('Unable to kick user. That user has a higher role than me.')
             return
 
@@ -31,10 +31,10 @@ class Mod:
     @commands.guild_only()
     async def ban(self, ctx, user: discord.Member, *, reason: ReasonConverter = None):
         """Ban a user from the server."""
-        if user.top_role > ctx.author.top_role:
+        if user.top_role >= ctx.author.top_role:
             await ctx.send('You cannot ban someone with a higher role than you.')
             return
-        if user.top_role > ctx.me.top_role:
+        if user.top_role >= ctx.me.top_role:
             await ctx.send('Unable to ban user. That user has a higher role than me.')
             return
 
