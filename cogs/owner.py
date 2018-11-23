@@ -9,8 +9,10 @@ class Owner:
     def __init__(self, bot):
         self.bot = bot
 
+    async def __local_check(self, ctx):
+        return await self.bot.is_owner(ctx.author)
+
     @commands.command()
-    @commands.is_owner()
     async def reload(self, ctx, extension):
         """Reloads an extension."""
         extension = f'cogs.{extension}'
@@ -23,7 +25,6 @@ class Owner:
         await ctx.send(f'{extension} has been successfully reloaded.')
 
     @commands.command()
-    @commands.is_owner()
     async def load(self, ctx, extension):
         """Loads an extension."""
         extension = f'cogs.{extension}'
@@ -35,7 +36,6 @@ class Owner:
         await ctx.send(f'{extension} has been successfully loaded.')
 
     @commands.command()
-    @commands.is_owner()
     async def unload(self, ctx, extension):
         """Unloads an extension."""
         extension = f'cogs.{extension}'
