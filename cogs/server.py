@@ -47,9 +47,10 @@ class Server:
     @commands.command()
     @commands.guild_only()
     async def userinfo(self, ctx, *, member: InsensitiveMemberConverter = None):
+        """Get information about a user."""
         if member is None:
             member = ctx.author
-        """Get information about a user."""
+
         embed = ColoredEmbed()
         embed.set_author(name=member, icon_url=member.avatar_url)
         embed.add_field(name='ID', value=member.id, inline=False)
