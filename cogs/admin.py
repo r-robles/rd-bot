@@ -11,20 +11,28 @@ class Admin:
 
     @commands.group()
     async def prefix(self, ctx):
+        """Manage the prefixes for invoking commands."""
         if ctx.invoked_subcommand is None:
             help_command = self.bot.get_command('help')
-            await ctx.invoke(help_command, command='prefix')
+            await ctx.invoke(help_command, 'prefix')
 
     @prefix.command(name='list')
     async def prefix_list(self, ctx):
         """Lists the prefixes for this server."""
         prefixes = self.bot.prefixes[ctx.guild.id]
-        return await ctx.send(f'Here are the prefixes for this guild:\n{", ".join(prefixes)}')
+        return await ctx.send(f'Here are the prefixes for this server:\n{", ".join(prefixes)}')
+
+    async def _update_prefixes(self, guild_id, prefixes):
+        connection = await self.bot.database.acquire()
+        async with connection.transaction():
+            query = "update prefixes set prefixes = $1 where guild_id = $2;"
+            await connection.execute(query, prefixes, guild_id)
+        await self.bot.database.release(connection)
 
     @commands.has_permissions(manage_guild=True)
     @prefix.command(name='add')
     async def prefix_add(self, ctx, *, prefix):
-        """Adds a new prefix for this server."""
+        """Adds a new prefix to this server."""
         guild_id = ctx.guild.id
         current_prefixes = self.bot.prefixes[guild_id]
 
@@ -32,15 +40,11 @@ class Admin:
             return await ctx.send(f'{prefix} is already a prefix for this server!')
 
         current_prefixes.append(prefix)
-        connection = await self.bot.database.acquire()
-        async with connection.transaction():
-            query = "update prefixes set prefixes = $1 where guild_id = $2;"
-            await connection.execute(query, current_prefixes, guild_id)
-        await self.bot.database.release(connection)
+        await self._update_prefixes(guild_id, current_prefixes)
 
         self.bot.prefixes[guild_id] = current_prefixes
 
-        return await ctx.send(f'Here are your new guild prefixes:\n{", ".join(current_prefixes)}')
+        return await ctx.send(f'Here are your new server prefixes:\n{", ".join(current_prefixes)}')
 
     @commands.has_permissions(manage_guild=True)
     @prefix.command(name='remove', aliases=['delete'])
@@ -55,15 +59,11 @@ class Admin:
             return await ctx.send(f'You must have at least 1 prefix remaining for this server.')
 
         current_prefixes.remove(prefix)
-        connection = await self.bot.database.acquire()
-        async with connection.transaction():
-            query = "update prefixes set prefixes = $1 where guild_id = $2;"
-            await connection.execute(query, current_prefixes, guild_id)
-        await self.bot.database.release(connection)
+        await self._update_prefixes(guild_id, current_prefixes)
 
         self.bot.prefixes[guild_id] = current_prefixes
 
-        return await ctx.send(f'Here are your new guild prefixes:\n{", ".join(current_prefixes)}')
+        return await ctx.send(f'Here are your new server prefixes:\n{", ".join(current_prefixes)}')
 
 
 def setup(bot):
