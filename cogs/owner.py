@@ -1,3 +1,4 @@
+import asyncio
 import json
 import sys
 from discord.ext import commands
@@ -45,6 +46,21 @@ class Owner:
             await ctx.send(f'```py\n{type(ex).__name__}: {str(ex)}\n```')
             return
         await ctx.send(f'{extension} has been successfully unloaded.')
+
+    @commands.command()
+    async def bash(self, ctx, command):
+        """Run a bash command."""
+        process = await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+        stdout, stderr = await process.communicate()
+
+        if stdout:
+            await ctx.send(stdout)
+        else:
+            await ctx.send(stderr)
 
 
 def setup(bot):
