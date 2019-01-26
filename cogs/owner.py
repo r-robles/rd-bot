@@ -1,5 +1,7 @@
 import asyncio
 import json
+import shlex
+import subprocess
 import sys
 from discord.ext import commands
 
@@ -48,19 +50,36 @@ class Owner:
         await ctx.send(f'{extension} has been successfully unloaded.')
 
     @commands.command()
-    async def bash(self, ctx, command):
+    async def bash(self, ctx, *, command):
         """Run a bash command."""
-        process = await asyncio.create_subprocess_shell(
-            command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
+        try:
+            process = await asyncio.create_subprocess_shell(
+                command,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE)
 
-        stdout, stderr = await process.communicate()
+            stdout, stderr = await process.communicate()
+        # The above does not work on Windows, so the subprocess module
+        # is used instead
+        except NotImplementedError:
+            process = subprocess.Popen(
+                shlex.split(command),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+
+            loop = self.bot.loop
+            stdout, stderr = await loop.run_in_executor(None, process.communicate)
+
+        msg = ctx.message
 
         if stdout:
-            await ctx.send(stdout)
-        else:
-            await ctx.send(stderr)
+            await msg.add_reaction('✅')
+            result = stdout.decode('utf-8')
+        elif stderr:
+            await msg.add_reaction('❌')
+            result = stderr.decode('utf-8')
+
+        await ctx.send(f'```{result}```')
 
 
 def setup(bot):
