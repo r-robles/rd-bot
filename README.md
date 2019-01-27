@@ -5,7 +5,14 @@ This is a Discord bot written in Python.
 * Python 3.6 or higher
 * PostgreSQL 9 or higher
 
-## Setup
+### Optional for Linux
+These three packages/libraries are required for the `screenshot` command:
+* Firefox
+* Xvfb
+* Geckodriver
+
+
+## Setup (Ubuntu)
 1. Clone or download the repository.
 2. Create and set up a virtual environment using `python3 -m venv venv`.
 3. Activate your virtual environment using `source venv/bin/activate`.
