@@ -5,6 +5,7 @@ from arsenic.browsers import Firefox
 from arsenic.services import Geckodriver
 from datetime import datetime
 from discord.ext import commands
+from pyvirtualdisplay import Display
 from utils.messages import ColoredEmbed, MessageUtils
 
 
@@ -74,12 +75,23 @@ class Misc:
         Args:
             link (str): the link to preview
         """
-        async with get_session(Geckodriver(), Firefox()) as session:
+        if not link.startswith('http://') and not link.startswith('https://'):
+            link = 'http://' + link
+
+        service = Geckodriver()
+        browser = Firefox(firefoxOptions={
+            'args': ['-headless']
+        })
+
+        display = Display(visible=0, size=(1920, 1080))
+        display.start()
+
+        async with get_session(service, browser) as session:
             await session.get(link)
             screenshot = await session.get_screenshot()
 
-            screenshot_file = discord.File(screenshot, 'image.png')
-            await ctx.send(file=screenshot_file)
+        screenshot_file = discord.File(screenshot, 'image.png')
+        await ctx.send(file=screenshot_file)
 
 
 def setup(bot):
