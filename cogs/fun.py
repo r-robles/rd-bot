@@ -10,7 +10,11 @@ class Fun:
 
     @commands.command()
     async def xkcd(self, ctx):
-        """See the latest XKCD comic."""
+        """See the latest XKCD comic.
+
+        Usage:
+            -xkcd
+        """
         async with self.bot.session.get('https://xkcd.com/info.0.json') as r:
             if r.status == 200:
                 json = await r.json()
@@ -21,12 +25,23 @@ class Fun:
 
     @commands.command()
     async def lenny(self, ctx):
-        """( ͡° ͜ʖ ͡°)"""
+        """( ͡° ͜ʖ ͡°)
+
+        Usage:
+            -lenny
+        """
         await ctx.send('( ͡° ͜ʖ ͡°)')
 
     @commands.command(name='8ball')
     async def eight_ball(self, ctx, *, question):
-        """Ask the magic 8 ball."""
+        """Ask the magic 8 ball.
+
+        Usage:
+            -8ball [question]
+
+        Args:
+            question (str): the question to ask (must end with "?")
+        """
         if not question.endswith('?'):
             await ctx.send('That\'s not a question!')
             return

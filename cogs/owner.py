@@ -17,7 +17,17 @@ class Owner:
 
     @commands.command()
     async def reload(self, ctx, extension):
-        """Reloads an extension."""
+        """Reload an extension.
+
+        This assumes that the file you want to reload is in the "cogs"
+        folder.
+
+        Usage:
+            -reload [extension]
+
+        Args:
+            extension (str): the extension to reload
+        """
         extension = f'cogs.{extension}'
         try:
             self.bot.unload_extension(extension)
@@ -29,7 +39,17 @@ class Owner:
 
     @commands.command()
     async def load(self, ctx, extension):
-        """Loads an extension."""
+        """Load an extension.
+
+        This assumes that the file you want to load is in the "cogs"
+        folder.
+
+        Usage:
+            -load [extension]
+
+        Args:
+            extension (str): the extension to load
+        """
         extension = f'cogs.{extension}'
         try:
             self.bot.load_extension(extension)
@@ -40,7 +60,17 @@ class Owner:
 
     @commands.command()
     async def unload(self, ctx, extension):
-        """Unloads an extension."""
+        """Load an extension.
+
+        This assumes that the file you want to unload is in the "cogs"
+        folder.
+
+        Usage:
+            -unload [extension]
+
+        Args:
+            extension (str): the extension to unload
+        """
         extension = f'cogs.{extension}'
         try:
             self.bot.unload_extension(extension)
@@ -51,7 +81,14 @@ class Owner:
 
     @commands.command()
     async def bash(self, ctx, *, command):
-        """Run a bash command."""
+        """Run a bash command.
+
+        Usage:
+            -bash [command]
+
+        Args:
+            command (str): the bash command to invoke
+        """
         try:
             process = await asyncio.create_subprocess_shell(
                 command,

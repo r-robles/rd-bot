@@ -12,7 +12,11 @@ class Misc:
 
     @commands.command()
     async def ping(self, ctx):
-        """Pong!"""
+        """Pong!
+
+        Usage:
+            -ping
+        """
         start = ctx.message.created_at.now()
         message = await ctx.send(content=':ping_pong: Pong!')
         end = datetime.now()
@@ -22,7 +26,11 @@ class Misc:
 
     @commands.command()
     async def botinfo(self, ctx):
-        """See some information about the bot."""
+        """See some information about the bot.
+
+        Usage:
+            -botinfo
+        """
         bot_user = self.bot.user
         app = await self.bot.application_info()
 

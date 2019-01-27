@@ -13,7 +13,11 @@ class Server:
     @commands.command()
     @commands.guild_only()
     async def serverinfo(self, ctx):
-        """Get information about the server."""
+        """Get information about the server.
+
+        Usage:
+            -serverinfo
+        """
         guild = ctx.guild
         embed = ColoredEmbed(title=guild.name)
         embed.add_field(name='ID', value=guild.id)
@@ -35,7 +39,14 @@ class Server:
     @commands.command()
     @commands.guild_only()
     async def avatar(self, ctx, *, member: InsensitiveMemberConverter = None):
-        """Get someone's avatar."""
+        """Get someone's avatar.
+
+        Usage:
+            -avatar <member>
+
+        Args:
+            member (Member): the member. Defaults to the invoker if a member is not specified
+        """
         if member is None:
             member = ctx.author
         avatar = member.avatar_url_as(static_format='png')
@@ -47,7 +58,14 @@ class Server:
     @commands.command()
     @commands.guild_only()
     async def userinfo(self, ctx, *, member: InsensitiveMemberConverter = None):
-        """Get information about a user."""
+        """Get information about a user.
+
+        Usage:
+            -userinfo <member>
+
+        Args:
+            member (Member): the member. Defaults to the invoker if a member is not specified
+        """
         if member is None:
             member = ctx.author
 
