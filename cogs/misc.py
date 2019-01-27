@@ -1,4 +1,8 @@
+import discord
 import psutil
+from arsenic import get_session
+from arsenic.browsers import Firefox
+from arsenic.services import Geckodriver
 from datetime import datetime
 from discord.ext import commands
 from utils.messages import ColoredEmbed, MessageUtils
@@ -58,6 +62,24 @@ class Misc:
         embed.add_field(name='Uptime', value=uptime, inline=False)
 
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=['ss'])
+    async def screenshot(self, ctx, link: str):
+        """Preview a web page without clicking on it.
+
+        Usage:
+            -screenshot [link]
+            -ss [link]
+
+        Args:
+            link (str): the link to preview
+        """
+        async with get_session(Geckodriver(), Firefox()) as session:
+            await session.get(link)
+            screenshot = await session.get_screenshot()
+
+            screenshot_file = discord.File(screenshot, 'image.png')
+            await ctx.send(file=screenshot_file)
 
 
 def setup(bot):
