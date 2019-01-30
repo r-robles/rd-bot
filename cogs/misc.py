@@ -18,9 +18,6 @@ class Misc:
     @commands.command()
     async def ping(self, ctx):
         """Pong!
-
-        Usage:
-            -ping
         """
         start = ctx.message.created_at.now()
         message = await ctx.send(content=':ping_pong: Pong!')
@@ -32,9 +29,6 @@ class Misc:
     @commands.command()
     async def botinfo(self, ctx):
         """See some information about the bot.
-
-        Usage:
-            -botinfo
         """
         bot_user = self.bot.user
         app = await self.bot.application_info()
@@ -68,12 +62,8 @@ class Misc:
     async def screenshot(self, ctx, link: str):
         """Preview a web page without clicking on it.
 
-        Usage:
-            -screenshot [link]
-            -ss [link]
-
         Args:
-            link (str): the link to preview
+            link: the link to preview
         """
         if not link.startswith('http://') and not link.startswith('https://'):
             link = 'http://' + link

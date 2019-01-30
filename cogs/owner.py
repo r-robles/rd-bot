@@ -22,11 +22,8 @@ class Owner:
         This assumes that the file you want to reload is in the "cogs"
         folder.
 
-        Usage:
-            -reload [extension]
-
         Args:
-            extension (str): the extension to reload
+            extension: the extension to reload
         """
         extension = f'cogs.{extension}'
         try:
@@ -44,11 +41,8 @@ class Owner:
         This assumes that the file you want to load is in the "cogs"
         folder.
 
-        Usage:
-            -load [extension]
-
         Args:
-            extension (str): the extension to load
+            extension: the extension to load
         """
         extension = f'cogs.{extension}'
         try:
@@ -65,11 +59,8 @@ class Owner:
         This assumes that the file you want to unload is in the "cogs"
         folder.
 
-        Usage:
-            -unload [extension]
-
         Args:
-            extension (str): the extension to unload
+            extension: the extension to unload
         """
         extension = f'cogs.{extension}'
         try:
@@ -83,11 +74,8 @@ class Owner:
     async def bash(self, ctx, *, command):
         """Run a bash command.
 
-        Usage:
-            -bash [command]
-
         Args:
-            command (str): the bash command to invoke
+            command: the bash command to invoke
         """
         try:
             process = await asyncio.create_subprocess_shell(

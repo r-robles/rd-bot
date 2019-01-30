@@ -21,12 +21,9 @@ class Mod:
         Required Permissions:
             Kick Members
 
-        Usage:
-            -kick [member] <reason>
-
         Args:
-            member (Member): the member to kick
-            reason (str): the reason for kick the member
+            member: the member to kick
+            reason: the reason for kicking the member
         """
         if user.top_role >= ctx.author.top_role:
             await ctx.send('You cannot kick someone with a higher role than you.')
@@ -52,12 +49,9 @@ class Mod:
         Required Permissions:
             Ban Members
 
-        Usage:
-            -ban [member] <reason>
-
         Args:
-            member (Member): the member to ban
-            reason (str): the reason for banning the member
+            member: the member to ban
+            reason (optional): the reason for banning the member
         """
         if user.top_role >= ctx.author.top_role:
             await ctx.send('You cannot ban someone with a higher role than you.')
@@ -80,11 +74,8 @@ class Mod:
         Required Permissions:
             Manage Messages
 
-        Usage:
-            -purge <limit>
-
         Args:
-            limit (int, optional): number of messages to delete, which must be between 0 and 500
+            limit: number of messages to delete, which must be between 0 and 500
         """
         if limit < 0 or limit > 500:
             await ctx.send('You can only purge a maximum of 500 messages.')

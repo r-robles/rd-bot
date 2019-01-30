@@ -20,9 +20,6 @@ class Admin:
     @prefix.command(name='list')
     async def prefix_list(self, ctx):
         """List the prefixes for this server.
-
-        Usage:
-            -prefix list
         """
         prefixes = self.bot.prefixes[ctx.guild.id]
         return await ctx.send(f'Here are the prefixes for this server:\n{", ".join(prefixes)}')
@@ -42,11 +39,8 @@ class Admin:
         Required Permissions:
             Manage Guild
 
-        Usage:
-            -prefix add [prefix]
-
         Args:
-            prefix (str): the prefix to add
+            prefix: the prefix to add
         """
         guild_id = ctx.guild.id
         current_prefixes = self.bot.prefixes[guild_id]
@@ -66,15 +60,8 @@ class Admin:
     async def prefix_remove(self, ctx, *, prefix):
         """Remove a prefix from this server.
 
-        Required Permissions:
-            Manage Guild
-
-        Usages:
-            -prefix remove [prefix]
-            -prefix delete [prefix]
-
         Args:
-            prefix (str): the prefix to remove
+            prefix: the prefix to remove
         """
         guild_id = ctx.guild.id
         current_prefixes = self.bot.prefixes[guild_id]
