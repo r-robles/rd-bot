@@ -30,11 +30,11 @@ async def get_prefix(bot, msg):
 
     connection = await bot.database.acquire()
     async with connection.transaction():
-        query = "select prefixes from prefixes where guild_id = $1;"
+        query = 'select prefixes from prefixes where guild_id = $1;'
         prefixes = await bot.database.fetchval(query, guild_id)
         if not prefixes:
             prefixes = ['-']
-            query = "insert into prefixes(guild_id, prefixes) values($1, $2);"
+            query = 'insert into prefixes(guild_id, prefixes) values($1, $2);'
             await connection.execute(query, msg.guild.id, prefixes)
     await bot.database.release(connection)
 
@@ -76,7 +76,9 @@ class Bot(commands.Bot):
         }
 
         self.database = await asyncpg.create_pool(**database_credentials)
-        await self.database.execute("create table if not exists prefixes(guild_id bigint PRIMARY KEY, prefixes text[])")
+
+        await self.database.execute('create table if not exists prefixes(guild_id bigint PRIMARY KEY, prefixes text[])')
+        await self.database.execute('create table if not exists tags(id SERIAL PRIMARY KEY, name text, owner bigint, content text)')
 
     def load_extensions(self):
         for file in os.listdir('cogs'):
