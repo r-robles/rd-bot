@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from utils.messages import ColoredEmbed
 
 
 class Tag:
@@ -105,6 +106,22 @@ class Tag:
                 await ctx.send('You remove a tag that you do not own!')
         else:
             await ctx.send('There is no tag with that name!')
+
+    @tag.command(name='list')
+    async def list_tags(self, ctx):
+        """List all tags that are saved.
+        """
+        query = "select name from tags order by name;"
+
+        result = await self.bot.database.fetch(query)
+
+        tags = ''
+        for r in result:
+            tags += f'**∙** {r["name"]}\n'
+
+        embed = ColoredEmbed()
+        embed.add_field(name='Tags List', value=tags)
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
