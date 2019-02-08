@@ -78,7 +78,7 @@ class Bot(commands.Bot):
         self.database = await asyncpg.create_pool(**database_credentials)
 
         await self.database.execute('create table if not exists prefixes(guild_id bigint PRIMARY KEY, prefixes text[])')
-        await self.database.execute('create table if not exists tags(id SERIAL PRIMARY KEY, name text, owner bigint, content text)')
+        await self.database.execute('create table if not exists tags(id SERIAL PRIMARY KEY, name text, owner bigint, guild_id bigint, content text)')
 
     def load_extensions(self):
         for file in os.listdir('cogs'):
