@@ -3,6 +3,18 @@ from discord.ext import commands
 from utils.messages import ColoredEmbed
 
 
+class TagConverter(commands.clean_content):
+    async def convert(self, _, tag):
+        """
+        Returns:
+            the tag in all lowercase characters, and with leading and
+            trailing whitespaces removed. If the resulting tag is
+            empty, then None is returned
+        """
+        result = tag.strip(' ').lower()
+        return result if len(result) > 0 else None
+
+
 class Tag:
     """Tag something for future reference."""
 
@@ -11,11 +23,10 @@ class Tag:
 
     async def search_tag(self, tag, guild_id):
         query = 'select * from tags where name = $1 and guild_id = $2;'
-
-        return await self.bot.database.fetchrow(query, tag)
+        return await self.bot.database.fetchrow(query, tag, guild_id)
 
     @commands.group(invoke_without_command=True)
-    async def tag(self, ctx, *, tag=None):
+    async def tag(self, ctx, *, tag: TagConverter = None):
         """Search, create, edit, or remove a tag.
 
         If no command is specified, the tag will be searched for.
@@ -33,7 +44,7 @@ class Tag:
                 await ctx.send('No tag exists with that name!')
 
     @tag.command(name='create')
-    async def create_tag(self, ctx, tag, *, content=None):
+    async def create_tag(self, ctx, tag: TagConverter = None, *, content=None):
         """Create a tag in this server.
 
         If the tag you want to create has more than one word, then it
@@ -57,7 +68,7 @@ class Tag:
             await ctx.send('That tag already exists!')
 
     @tag.command(name='edit')
-    async def edit_tag(self, ctx, tag, *, content):
+    async def edit_tag(self, ctx, tag: TagConverter = None, *, content):
         """Edit a tag you own.
 
         If your tag is more than one word, then it should be
@@ -85,7 +96,7 @@ class Tag:
             await ctx.send('There is no tag with that name!')
 
     @tag.command(name='remove', aliases=['delete'])
-    async def remove_tag(self, ctx, *, tag):
+    async def remove_tag(self, ctx, *, tag: TagConverter = None):
         """Remove a tag you own.
 
         Args:
