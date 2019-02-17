@@ -4,15 +4,19 @@ from utils.messages import ColoredEmbed
 
 
 class TagConverter(commands.clean_content):
-    async def convert(self, _, tag):
+    async def convert(self, ctx, tag):
         """
         Returns:
-            the tag in all lowercase characters, and with leading and
-            trailing whitespaces removed. If the resulting tag is
-            empty, then None is returned
+            the tag in lowercase with leading and trailing whitespaces
+                removed
+            If no tag was entered to begin with, an empty string is
+                returned
         """
+        if not tag:
+            return ''
+        result = await super().convert(ctx, tag)
         result = tag.strip(' ').lower()
-        return result if len(result) > 0 else None
+        return result
 
 
 class Tag:
@@ -56,6 +60,11 @@ class Tag:
             tag: the name of the tag to create
             content (optional): the contents of the tag
         """
+        if not tag:
+            return await ctx.send('You must enter a tag to create!')
+        if tag in ['create', 'remove', 'delete', 'edit', 'list', 'owned']:
+            return await ctx.send('You cannot create a tag with that name!')
+
         guild_id = ctx.guild.id
         result = await self.search_tag(tag, guild_id)
 
