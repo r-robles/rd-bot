@@ -3,7 +3,7 @@ from discord.ext import commands
 from utils.converters import ReasonConverter
 
 
-class Mod:
+class Mod(commands.Cog):
     """Commands for managing the server."""
 
     def __init__(self, bot):

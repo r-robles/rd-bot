@@ -6,7 +6,7 @@ import sys
 from discord.ext import commands
 
 
-class Owner:
+class Owner(commands.Cog):
     """Commands restricted to the bot owner."""
 
     def __init__(self, bot):

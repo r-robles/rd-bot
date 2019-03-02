@@ -4,7 +4,7 @@ from utils.converters import InsensitiveMemberConverter
 from utils.messages import ColoredEmbed, MessageUtils
 
 
-class Server:
+class Server(commands.Cog):
     """Server related commands."""
 
     def __init__(self, bot):

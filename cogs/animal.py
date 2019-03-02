@@ -4,7 +4,7 @@ from discord.ext import commands
 from utils.messages import ColoredEmbed
 
 
-class Animal:
+class Animal(commands.Cog):
     """Some cute animals."""
 
     def __init__(self, bot):

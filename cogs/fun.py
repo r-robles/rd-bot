@@ -4,7 +4,7 @@ from discord.ext import commands
 from utils.messages import ColoredEmbed
 
 
-class Fun:
+class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

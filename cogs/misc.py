@@ -9,7 +9,7 @@ from pyvirtualdisplay import Display
 from utils.messages import ColoredEmbed, MessageUtils
 
 
-class Misc:
+class Misc(commands.Cog):
     """Miscellaneous commands."""
 
     def __init__(self, bot):

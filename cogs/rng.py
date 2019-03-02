@@ -2,7 +2,7 @@ import random
 from discord.ext import commands
 
 
-class RNG:
+class RNG(commands.Cog):
     """Commands of random chance."""
 
     def __init__(self, bot):

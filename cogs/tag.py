@@ -19,7 +19,7 @@ class TagConverter(commands.clean_content):
         return result
 
 
-class Tag:
+class Tag(commands.Cog):
     """Tag something for future reference."""
 
     def __init__(self, bot):
