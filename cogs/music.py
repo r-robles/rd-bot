@@ -7,19 +7,24 @@ from discord.ext import commands
 import lavalink
 from lavalink.PlayerManager import DefaultPlayer
 
-url_rx = re.compile('https?:\/\/(?:www\.)?.+') # noqa: W605
+url_rx = re.compile('https?:\/\/(?:www\.)?.+')  # noqa: W605
+
 
 class NoTrackPlayingError(commands.CommandInvokeError):
     pass
 
+
 class CustomPlayer(DefaultPlayer):
     """Lavalink player with default volume set to 50%."""
+
     def __init__(self, lavalink, guild_id: int):
         super().__init__(lavalink, guild_id)
         self.volume = 50
 
+
 class Music(commands.Cog):
     """Commands to play music in a voice channel."""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -189,7 +194,7 @@ class Music(commands.Cog):
         requester = await self.bot.fetch_user(player.current.requester)
 
         embed = ColoredEmbed(title='Now Playing',
-                                description=f'[{player.current.title}]({player.current.uri})')
+                             description=f'[{player.current.title}]({player.current.uri})')
 
         embed.add_field(name='Requested by', value=requester)
         embed.add_field(name='Current Time', value=current_time)
@@ -318,16 +323,19 @@ class Music(commands.Cog):
         if not player.is_connected:
             if not ctx.author.voice or not ctx.author.voice.channel:
                 await ctx.send('You aren\'t connected to any voice channel.')
-                raise commands.CommandInvokeError('Invoker is not connected to a voice channel.')
+                raise commands.CommandInvokeError(
+                    'Invoker is not connected to a voice channel.')
 
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
             if not permissions.connect:
                 await ctx.send('I am missing `CONNECT` permissions in your voice channel.')
-                raise commands.CommandInvokeError('Bot is missing CONNECT permissions.')
+                raise commands.CommandInvokeError(
+                    'Bot is missing CONNECT permissions.')
             if not permissions.speak:
                 await ctx.send('I am missing `SPEAK` permissions in your voice channel.')
-                raise commands.CommandInvokeError('Bot is missing SPEAK permissions.')
+                raise commands.CommandInvokeError(
+                    'Bot is missing SPEAK permissions.')
 
             player.store('channel', ctx.channel.id)
             await player.connect(ctx.author.voice.channel.id)
