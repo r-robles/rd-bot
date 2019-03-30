@@ -14,14 +14,6 @@ class NoTrackPlayingError(commands.CommandInvokeError):
     pass
 
 
-class CustomPlayer(DefaultPlayer):
-    """Lavalink player with default volume set to 50%."""
-
-    def __init__(self, lavalink, guild_id: int):
-        super().__init__(lavalink, guild_id)
-        self.volume = 50
-
-
 class Music(commands.Cog):
     """Commands to play music in a voice channel."""
 
@@ -35,8 +27,7 @@ class Music(commands.Cog):
                                                 rest_port=self.bot.config['Lavalink']['port'],
                                                 ws_port=self.bot.config['Lavalink']['port'],
                                                 log_level=logging.DEBUG,
-                                                loop=bot.loop,
-                                                player=CustomPlayer)
+                                                loop=bot.loop)
         self.bot.lavalink.register_hook(self.handle_events)
 
     def cog_unload(self):
