@@ -25,18 +25,15 @@ async def run_bot():
 async def get_prefix(bot, msg):
     guild_id = msg.guild.id
 
-    if msg.guild.id in bot.prefixes:
+    if guild_id in bot.prefixes:
         return commands.when_mentioned_or(*bot.prefixes[guild_id])(bot, msg)
 
-    connection = await bot.database.acquire()
-    async with connection.transaction():
-        query = 'select prefixes from prefixes where guild_id = $1;'
-        prefixes = await bot.database.fetchval(query, guild_id)
-        if not prefixes:
-            prefixes = ['-']
-            query = 'insert into prefixes(guild_id, prefixes) values($1, $2);'
-            await connection.execute(query, msg.guild.id, prefixes)
-    await bot.database.release(connection)
+    query = 'select prefixes from prefixes where guild_id = $1;'
+    prefixes = await bot.database.fetchval(query, guild_id)
+    if not prefixes:
+        prefixes = ['-']
+        query = 'insert into prefixes(guild_id, prefixes) values($1, $2);'
+        await bot.database.execute(query, guild_id, prefixes)
 
     bot.prefixes[guild_id] = prefixes
 
