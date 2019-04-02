@@ -6,3 +6,8 @@ user = username
 password = password
 database = some_database
 host = localhost
+
+[Lavalink]
+host = localhost
+password = password
+port = 2333
