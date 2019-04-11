@@ -56,6 +56,11 @@ class Music(commands.Cog):
         elif isinstance(event, lavalink.Events.QueueEndEvent):
             await event.player.disconnect()
 
+    async def cog_command_error(self, ctx, error):
+        """Handler for exceptions raised in music commands."""
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send(error.original)
+
     @commands.guild_only()
     @commands.command()
     async def play(self, ctx, *, query: str = None):
@@ -320,20 +325,17 @@ class Music(commands.Cog):
 
         if not player.is_connected:
             if not ctx.author.voice or not ctx.author.voice.channel:
-                await ctx.send('You aren\'t connected to any voice channel.')
                 raise commands.CommandInvokeError(
-                    'Invoker is not connected to a voice channel.')
+                    'You aren\'t connected to any voice channel.')
 
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
             if not permissions.connect:
-                await ctx.send('I am missing `CONNECT` permissions in your voice channel.')
                 raise commands.CommandInvokeError(
-                    'Bot is missing CONNECT permissions.')
+                    'I am missing `CONNECT` permissions in your voice channel.')
             if not permissions.speak:
-                await ctx.send('I am missing `SPEAK` permissions in your voice channel.')
                 raise commands.CommandInvokeError(
-                    'Bot is missing SPEAK permissions.')
+                    'I am missing `SPEAK` permissions in your voice channel.')
 
             player.store('channel', ctx.channel.id)
             await player.connect(ctx.author.voice.channel.id)
@@ -346,11 +348,12 @@ class Music(commands.Cog):
     @skip.before_invoke
     @now_playing.before_invoke
     async def ensure_currently_playing(self, ctx):
+        """Ensure the bot is currently playing some music before invoking
+        certain commands."""
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
         if not player.is_playing:
-            await ctx.send('No track is being played right now.')
-            raise NoTrackPlayingError()
+            raise NoTrackPlayingError('No track is being played right now.')
 
 
 def setup(bot):
