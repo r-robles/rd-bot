@@ -36,8 +36,7 @@ class Tag(commands.Cog):
         If no command is specified, the tag will be searched for.
         """
         if tag is None:
-            help_command = self.bot.get_command('help')
-            return await ctx.invoke(help_command, 'tag')
+            return await ctx.send_help(ctx.command)
         if ctx.invoked_subcommand is None:
             result = await self.search_tag(tag, ctx.guild.id)
 

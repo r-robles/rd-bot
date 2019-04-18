@@ -77,8 +77,7 @@ class Server(commands.Cog):
         """Manage the prefixes for invoking commands.
         """
         if ctx.invoked_subcommand is None:
-            help_command = self.bot.get_command('help')
-            await ctx.invoke(help_command, 'prefix')
+            return await ctx.send_help(ctx.command)
 
     @prefix.command(name='list')
     async def prefix_list(self, ctx):
