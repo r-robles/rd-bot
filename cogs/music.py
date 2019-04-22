@@ -231,7 +231,7 @@ class Music(commands.Cog):
             return await ctx.send(f'Page {page} does not exist in this queue.')
 
         start = (page - 1) * items_per_page
-        end = start + items_per_page
+        end = min(start + items_per_page, len(player.queue))
 
         current_page_queue = player.queue[start:end]
 
