@@ -110,7 +110,7 @@ class Music(commands.Cog):
         elif results['loadType'] == 'SEARCH_RESULT' or results['loadType'] == 'TRACK_LOADED':
             track = results['tracks'][0]
             player.add(requester=ctx.author.id, track=track)
-            embed = ColoredEmbed(title='Track Added to Queue',
+            embed = ColoredEmbed(title=f'Track Added to Position {len(player.queue)} in Queue',
                                  description=f'[{track["info"]["title"]}]({track["info"]["uri"]})')
             await ctx.send(embed=embed)
         else:
