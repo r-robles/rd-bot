@@ -40,6 +40,8 @@ class Music(commands.Cog):
         """Event handler for when tracks start and when the queue is clear."""
         if isinstance(event, lavalink.Events.TrackStartEvent):
             channel = self.bot.get_channel(event.player.fetch('channel'))
+            player = event.player
+
             embed = ColoredEmbed(title='Now Playing',
                                  description=f'[{event.track.title}]({event.track.uri})')
             embed.set_thumbnail(url=event.track.thumbnail)
@@ -52,6 +54,9 @@ class Music(commands.Cog):
             else:
                 duration = lavalink.Utils.format_time(event.track.duration)
             embed.add_field(name='Duration', value=f'{duration}')
+            embed.set_footer(
+                text=f'Repeat: {"on" if player.repeat else "off"}, Shuffle: {"on" if player.shuffle else "off"}')
+
             await channel.send(embed=embed)
         elif isinstance(event, lavalink.Events.QueueEndEvent):
             await event.player.disconnect()
@@ -202,7 +207,8 @@ class Music(commands.Cog):
         embed.add_field(name='Requested by', value=requester)
         embed.add_field(name='Current Time', value=current_time)
         embed.set_thumbnail(url=player.current.thumbnail)
-
+        embed.set_footer(
+            text=f'Repeat: {"on" if player.repeat else "off"}, Shuffle: {"on" if player.shuffle else "off"}')
         await ctx.send(embed=embed)
 
     @commands.command(name='queue', aliases=['q'])
@@ -277,7 +283,7 @@ class Music(commands.Cog):
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
         player.shuffle = not player.shuffle
-        await ctx.send(f'Shuffle is now {"enabled" if player.shuffle else "disabled"}.')
+        await ctx.send(f'Shuffle is now {"on" if player.shuffle else "off"}.')
 
     @commands.command()
     @commands.guild_only()
@@ -286,7 +292,7 @@ class Music(commands.Cog):
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
         player.repeat = not player.repeat
-        await ctx.send(f'Repeat is now {"enabled" if player.repeat else "disabled"}.')
+        await ctx.send(f'Repeat is now {"on" if player.repeat else "off"}.')
 
     @commands.command(name='remove')
     @commands.guild_only()
