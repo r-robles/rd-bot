@@ -88,6 +88,8 @@ class Music(commands.Cog):
             if not player.is_playing:
                 play_at_command = self.bot.get_command('playfrom')
                 return await ctx.invoke(play_at_command, 1)
+            else:
+                return await ctx.send('I\'m already playing music in your channel!')
 
         query = query.strip('<>')
 
@@ -103,9 +105,8 @@ class Music(commands.Cog):
             for track in tracks:
                 player.add(requester=ctx.author.id, track=track)
 
-            embed = ColoredEmbed(title=f'{results["playlistInfo"]["name"]} Playlist Added to Queue',
-                                 description=f'{len(tracks)} tracks have been added to your queue.',
-                                 url=query)
+            embed = ColoredEmbed(title='Playlist Added to Queue',
+                                 description=f'{len(tracks)} tracks from [{results["playlistInfo"]["name"]}]({query}) have been added to your queue.')
             await ctx.send(embed=embed)
         elif results['loadType'] == 'SEARCH_RESULT' or results['loadType'] == 'TRACK_LOADED':
             track = results['tracks'][0]
