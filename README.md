@@ -21,6 +21,7 @@ These three packages/libraries are required for the `screenshot` command:
     2. Add an `application.yml` file in the same directory as the `jar` file.
        An example can be found [here](https://github.com/Frederikam/Lavalink/blob/master/LavalinkServer/application.yml.example).
     3. Change the port, address, and password as desired.
+       The default values in the example file above will work as well.
     4. Run the server using `java -jar Lavalink.jar`.
 3. Create and set up a virtual environment using `python3 -m venv venv`.
 4. Activate your virtual environment using `source venv/bin/activate`.
