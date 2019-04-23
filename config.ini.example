@@ -9,5 +9,5 @@ host = localhost
 
 [Lavalink]
 host = localhost
-password = password
+password = youshallnotpass
 port = 2333
