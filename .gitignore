@@ -111,4 +111,5 @@ config.ini
 
 fgo.py
 db/
-geckodriver.exe
+
+chromedriver.exe

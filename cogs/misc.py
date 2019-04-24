@@ -1,11 +1,10 @@
 import discord
 import psutil
 from arsenic import get_session
-from arsenic.browsers import Firefox
-from arsenic.services import Geckodriver
+from arsenic.browsers import Chrome
+from arsenic.services import Chromedriver
 from datetime import datetime
 from discord.ext import commands
-from pyvirtualdisplay import Display
 from utils.messages import ColoredEmbed, MessageUtils
 
 
@@ -68,13 +67,10 @@ class Misc(commands.Cog):
         if not link.startswith('http://') and not link.startswith('https://'):
             link = 'http://' + link
 
-        service = Geckodriver()
-        browser = Firefox(firefoxOptions={
-            'args': ['-headless']
+        service = Chromedriver()
+        browser = Chrome(chromeOptions={
+            'args': ['--headless', '--disable-gpu', '--window-size=1920,1080']
         })
-
-        display = Display(visible=0, size=(1920, 1080))
-        display.start()
 
         async with get_session(service, browser) as session:
             await session.get(link)

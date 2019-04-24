@@ -6,12 +6,8 @@ This is a Discord bot written in Python.
 * PostgreSQL 9 or higher
 * Java 8 or higher
 * [Lavalink](https://github.com/Frederikam/Lavalink)
-
-### Optional for Linux
-These three packages/libraries are required for the `screenshot` command:
-* Firefox
-* Xvfb
-* Geckodriver
+* Google Chrome
+* Chromedriver
 
 ## Setup
 1. Clone or download the repository.
