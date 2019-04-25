@@ -1,3 +1,4 @@
+from enum import Enum
 import logging
 import math
 import re
@@ -12,6 +13,14 @@ url_rx = re.compile('https?:\/\/(?:www\.)?.+')  # noqa: W605
 
 class NoTrackPlayingError(commands.CommandInvokeError):
     pass
+
+
+class NPEmbedSource(Enum):
+    """Creation source of the 'now playing' embed. Used to determine
+    the wording and information that should be displayed in the embed.
+    """
+    TRACK_START_EVENT = 1,
+    NP_COMMAND = 2
 
 
 class Music(commands.Cog):
@@ -36,27 +45,44 @@ class Music(commands.Cog):
             player.cleanup()
         self.bot.lavalink.unregister_hook(self.handle_events)
 
+    async def _create_np_embed(self, player, track, source):
+        """Creates an embed showing the track currently playing.
+
+        Args:
+            player: the music player for the guild
+            track: the track currently playing
+            source (NPEmbedSource): where this function is being called from
+        """
+        embed = ColoredEmbed(title='Now Playing',
+                             description=f'[{track.title}]({track.uri})')
+        embed.set_thumbnail(url=track.thumbnail)
+
+        requester = await self.bot.fetch_user(track.requester)
+        embed.add_field(name='Requested by', value=f'{requester}')
+
+        if track.stream:
+            duration = '🔴 LIVE'
+        else:
+            duration = lavalink.Utils.format_time(track.duration)
+
+        if source == NPEmbedSource.TRACK_START_EVENT:
+            embed.add_field(name='Duration', value=duration)
+        elif source == NPEmbedSource.NP_COMMAND:
+            current_time = lavalink.Utils.format_time(player.position)
+            embed.add_field(name='Current Time',
+                            value=f'{current_time} / {duration}')
+
+        embed.set_footer(
+            text=f'Repeat: {"on" if player.repeat else "off"}, Shuffle: {"on" if player.shuffle else "off"}')
+
+        return embed
+
     async def handle_events(self, event):
         """Event handler for when tracks start and when the queue is clear."""
         if isinstance(event, lavalink.Events.TrackStartEvent):
             channel = self.bot.get_channel(event.player.fetch('channel'))
-            player = event.player
 
-            embed = ColoredEmbed(title='Now Playing',
-                                 description=f'[{event.track.title}]({event.track.uri})')
-            embed.set_thumbnail(url=event.track.thumbnail)
-
-            requester = await self.bot.fetch_user(event.track.requester)
-            embed.add_field(name='Requested by', value=f'{requester}')
-
-            if event.track.stream:
-                duration = '🔴 LIVE'
-            else:
-                duration = lavalink.Utils.format_time(event.track.duration)
-            embed.add_field(name='Duration', value=f'{duration}')
-            embed.set_footer(
-                text=f'Repeat: {"on" if player.repeat else "off"}, Shuffle: {"on" if player.shuffle else "off"}')
-
+            embed = await self._create_np_embed(event.player, event.track, NPEmbedSource.TRACK_START_EVENT)
             await channel.send(embed=embed)
         elif isinstance(event, lavalink.Events.QueueEndEvent):
             await event.player.disconnect()
@@ -194,22 +220,8 @@ class Music(commands.Cog):
         """Show the track currently playing."""
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
-        if player.current.stream:
-            current_time = '🔴 LIVE'
-        else:
-            position = lavalink.Utils.format_time(player.position)
-            duration = lavalink.Utils.format_time(player.current.duration)
-            current_time = f'{position} / {duration}'
-        requester = await self.bot.fetch_user(player.current.requester)
-
-        embed = ColoredEmbed(title='Now Playing',
-                             description=f'[{player.current.title}]({player.current.uri})')
-
-        embed.add_field(name='Requested by', value=requester)
-        embed.add_field(name='Current Time', value=current_time)
-        embed.set_thumbnail(url=player.current.thumbnail)
-        embed.set_footer(
-            text=f'Repeat: {"on" if player.repeat else "off"}, Shuffle: {"on" if player.shuffle else "off"}')
+        embed = await self._create_np_embed(
+            player, player.current, NPEmbedSource.NP_COMMAND)
         await ctx.send(embed=embed)
 
     @commands.command(name='queue', aliases=['q'])
