@@ -72,6 +72,7 @@ class Music(commands.Cog):
             embed.add_field(name='Current Time',
                             value=f'{current_time} / {duration}')
 
+        embed.add_field(name='Volume', value=f'{player.volume}%')
         embed.set_footer(
             text=f'Repeat: {"on" if player.repeat else "off"}, Shuffle: {"on" if player.shuffle else "off"}')
 
