@@ -6,7 +6,7 @@ import discord
 from utils.messages import ColoredEmbed
 from discord.ext import commands
 import lavalink
-from lavalink.PlayerManager import DefaultPlayer
+
 
 url_rx = re.compile('https?:\/\/(?:www\.)?.+')  # noqa: W605
 
