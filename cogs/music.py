@@ -150,20 +150,17 @@ class Music(commands.Cog):
     @commands.command(name='playfrom', aliases=['pf'])
     @commands.guild_only()
     async def playfrom(self, ctx, index: int):
-        """Play the queue from a specific point.
+        """Play the queue from a specific track number.
 
-        All tracks before the specified point are discarded.
+        All tracks before this will be discarded.
 
         Args:
             index: the track number in the queue to start playing from
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
-        if index < 1:
-            return await ctx.send('Invalid index specified.')
-
-        if len(player.queue) < index:
-            return await ctx.send('This index exceeds the queue\'s length.')
+        if index < 1 or index > len(player.queue):
+            return await ctx.send('This track number does not exist.')
 
         await player.play_at(index-1)
 
