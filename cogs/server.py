@@ -77,8 +77,7 @@ class Server(commands.Cog):
         """Manage the prefixes for invoking commands.
         """
         if ctx.invoked_subcommand is None:
-            help_command = self.bot.get_command('help')
-            await ctx.invoke(help_command, 'prefix')
+            return await ctx.send_help(ctx.command)
 
     @prefix.command(name='list')
     async def prefix_list(self, ctx):
@@ -94,11 +93,8 @@ class Server(commands.Cog):
             guild_id (int): the id of the guild to update
             prefixes (str[]): the updated list of prefixes
         """
-        connection = await self.bot.database.acquire()
-        async with connection.transaction():
-            query = "update prefixes set prefixes = $1 where guild_id = $2;"
-            await connection.execute(query, prefixes, guild_id)
-        await self.bot.database.release(connection)
+        query = "update prefixes set prefixes = $1 where guild_id = $2;"
+        await self.bot.database.execute(query, prefixes, guild_id)
 
         self.bot.prefixes[guild_id] = prefixes
 
