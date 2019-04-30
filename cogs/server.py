@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 from utils.converters import InsensitiveMemberConverter
 from utils.messages import ColoredEmbed, MessageUtils

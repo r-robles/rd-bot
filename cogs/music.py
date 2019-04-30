@@ -2,7 +2,6 @@ from enum import Enum
 import logging
 import math
 import re
-import discord
 from utils.messages import ColoredEmbed
 from discord.ext import commands
 import lavalink
