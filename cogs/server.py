@@ -16,20 +16,22 @@ class Server(commands.Cog):
         """Get information about the server.
         """
         guild = ctx.guild
+
+        roles = ', '.join(
+            [role.name for role in guild.roles if role.name != '@everyone'])
+        num_text_channels = len(guild.text_channels)
+        num_voice_channels = len(guild.voice_channels)
+        create_time = MessageUtils.convert_time(guild.created_at)
+
         embed = ColoredEmbed(title=guild.name)
         embed.add_field(name='ID', value=guild.id)
-        embed.add_field(
-            name='Owner', value=f'{guild.owner.name}#{guild.owner.discriminator}')
+        embed.add_field(name='Owner', value=f'{guild.owner}')
         embed.add_field(name='Server Region', value=guild.region)
         embed.add_field(name='Members', value=guild.member_count)
-        embed.add_field(name='Text Channels',
-                        value=f'{len(guild.text_channels)}')
-        embed.add_field(name='Voice Channels',
-                        value=f'{len(guild.voice_channels)}')
-        roles = [role.name for role in guild.roles if role.name != '@everyone']
-        embed.add_field(name='Roles', value=', '.join(roles), inline=False)
-        embed.set_footer(
-            text=f'Created on {MessageUtils.convert_time(guild.created_at)}')
+        embed.add_field(name='Text Channels', value=num_voice_channels)
+        embed.add_field(name='Voice Channels', value=num_text_channels)
+        embed.add_field(name='Roles', value=roles, inline=False)
+        embed.set_footer(text=f'Created on {create_time}')
         embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
 
@@ -43,7 +45,9 @@ class Server(commands.Cog):
         """
         if member is None:
             member = ctx.author
+
         avatar = member.avatar_url_as(static_format='png')
+
         embed = ColoredEmbed()
         embed.set_author(name=member, icon_url=avatar)
         embed.set_image(url=avatar)
@@ -60,15 +64,17 @@ class Server(commands.Cog):
         if member is None:
             member = ctx.author
 
+        roles = ', '.join(
+            [role.name for role in member.roles if role.name != '@everyone'])
+        join_time = MessageUtils.convert_time(member.joined_at)
+        register_time = MessageUtils.convert_time(member.created_at)
+
         embed = ColoredEmbed()
         embed.set_author(name=member, icon_url=member.avatar_url)
         embed.add_field(name='ID', value=member.id, inline=False)
-        embed.add_field(name='Server Join Date',
-                        value=MessageUtils.convert_time(member.joined_at))
-        embed.add_field(name='Discord Join Date',
-                        value=MessageUtils.convert_time(member.created_at))
-        roles = [role.name for role in member.roles if role.name != '@everyone']
-        embed.add_field(name='Roles', value=', '.join(roles), inline=False)
+        embed.add_field(name='Join Time', value=join_time)
+        embed.add_field(name='Register Time', value=register_time)
+        embed.add_field(name='Roles', value=roles, inline=False)
         embed.add_field(name='Activity', value=member.activity)
         await ctx.send(embed=embed)
 
