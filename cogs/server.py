@@ -71,11 +71,12 @@ class Server(commands.Cog):
 
         embed = ColoredEmbed()
         embed.set_author(name=member, icon_url=member.avatar_url)
-        embed.add_field(name='ID', value=member.id, inline=False)
+        embed.add_field(name='ID', value=member.id)
+        embed.add_field(name='Nickname', value=member.nick)
         embed.add_field(name='Join Time', value=join_time)
         embed.add_field(name='Register Time', value=register_time)
         embed.add_field(name='Roles', value=roles, inline=False)
-        embed.add_field(name='Activity', value=member.activity)
+        embed.add_field(name='Activity', value=member.activity.name)
         await ctx.send(embed=embed)
 
     @commands.group()
