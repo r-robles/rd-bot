@@ -1,5 +1,6 @@
 import discord
 import psutil
+import platform
 from arsenic import get_session
 from arsenic.browsers import Chrome
 from arsenic.services import Chromedriver
@@ -16,8 +17,7 @@ class Misc(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
-        """Pong!
-        """
+        """Pong!"""
         start = ctx.message.created_at.now()
         message = await ctx.send(content=':ping_pong: Pong!')
         end = datetime.now()
@@ -27,33 +27,37 @@ class Misc(commands.Cog):
 
     @commands.command()
     async def botinfo(self, ctx):
-        """See some information about the bot.
-        """
+        """See some information about the bot."""
         bot_user = self.bot.user
         app = await self.bot.application_info()
 
-        cpu_usage = self.bot.process.cpu_percent() / psutil.cpu_count()
-        ram_usage = self.bot.process.memory_full_info().uss / 1024 ** 2
-        ram_percentage = 100 * \
-            (ram_usage / (psutil.virtual_memory().total / 1024 ** 2))
-
-        bot_name = f'{bot_user.name}#{bot_user.discriminator}'
-        owner = f'{app.owner.name}#{app.owner.discriminator}'
-        num_servers = str(len(self.bot.guilds))
-        num_members = str(len(self.bot.users))
-        cpu_usage_stat = f'{cpu_usage:.2f}%'
-        ram_usage_stat = f'{ram_usage:.2f} MiB ({ram_percentage:.2f}%)'
         uptime = MessageUtils.convert_time_delta(
             datetime.utcnow(), self.bot.startup_time)
+        bot_info = "\n".join((f'**Owner**: {app.owner}',
+                              f'**Bot ID**: {bot_user.id}',
+                              f'**Language**: Python {platform.python_version()}',
+                              f'**Library**: discord.py {discord.__version__}',
+                              f'**Websocket Latency**: {1000 * self.bot.latency: .2f} ms',
+                              f'**Uptime**: {uptime}'))
+
+        server_stats = "\n".join((f'**Servers**: {len(self.bot.guilds)}',
+                                  f'**Members**: {len(self.bot.users)}'))
+
+        cpu_usage = self.bot.process.cpu_percent() / psutil.cpu_count()
+        ram_used = self.bot.process.memory_full_info().uss / (1024 ** 2)
+        total_ram = psutil.virtual_memory().total / (1024 ** 2)
+        ram_percentage = (ram_used / total_ram) * 100
+        cpu_usage_stat = f'{cpu_usage:.2f}%'
+        ram_usage_stat = f'{ram_used:.2f} MiB ({ram_percentage:.2f}%)'
+        process_stats = "\n".join((f'**CPU Usage**: {cpu_usage_stat}',
+                                   f'**RAM Usage**: {ram_usage_stat}'))
 
         embed = ColoredEmbed()
-        embed.set_author(name=bot_name, icon_url=bot_user.avatar_url)
-        embed.add_field(name='Owner', value=owner, inline=False)
-        embed.add_field(name='Servers', value=num_servers, inline=False)
-        embed.add_field(name='Members', value=num_members)
-        embed.add_field(name='CPU Usage', value=cpu_usage_stat, inline=False)
-        embed.add_field(name='RAM Usage', value=ram_usage_stat, inline=False)
-        embed.add_field(name='Uptime', value=uptime, inline=False)
+        embed.set_author(name=bot_user, icon_url=bot_user.avatar_url)
+        embed.add_field(name='Bot Info', value=bot_info, inline=False)
+        embed.add_field(name='Server Stats', value=server_stats, inline=False)
+        embed.add_field(name='Process Stats',
+                        value=process_stats, inline=False)
 
         await ctx.send(embed=embed)
 
