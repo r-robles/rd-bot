@@ -46,13 +46,9 @@ class Owner(commands.Cog):
     async def unload(self, ctx, extension):
         """Load an extension.
 
-        This assumes that the file you want to unload is in the "cogs"
-        folder.
-
         Args:
             extension: the extension to unload
         """
-        extension = f'cogs.{extension}'
         try:
             self.bot.unload_extension(extension)
         except (AttributeError, ImportError) as ex:
