@@ -63,10 +63,11 @@ class Server(commands.Cog):
         if member is None:
             member = ctx.author
 
-        roles = ', '.join(
-            [role.name for role in member.roles if role.name != '@everyone'])
+        roles = ", ".join(
+            [r.name for r in member.roles if r.name != '@everyone']) or 'None'
         join_time = MessageUtils.convert_time(member.joined_at)
         register_time = MessageUtils.convert_time(member.created_at)
+        activity = member.activity.name if member.activity else 'None'
 
         embed = ColoredEmbed()
         embed.set_author(name=member, icon_url=member.avatar_url)
@@ -75,7 +76,7 @@ class Server(commands.Cog):
         embed.add_field(name='Join Time', value=join_time)
         embed.add_field(name='Register Time', value=register_time)
         embed.add_field(name='Roles', value=roles, inline=False)
-        embed.add_field(name='Activity', value=member.activity.name)
+        embed.add_field(name='Activity', value=activity)
         await ctx.send(embed=embed)
 
     @commands.group()
