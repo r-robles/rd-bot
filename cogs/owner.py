@@ -1,8 +1,6 @@
 import asyncio
-import json
 import shlex
 import subprocess
-import sys
 from discord.ext import commands
 
 
@@ -19,13 +17,9 @@ class Owner(commands.Cog):
     async def reload(self, ctx, extension):
         """Reload an extension.
 
-        This assumes that the file you want to reload is in the "cogs"
-        folder.
-
         Args:
             extension: the extension to reload
         """
-        extension = f'cogs.{extension}'
         try:
             self.bot.unload_extension(extension)
             self.bot.load_extension(extension)
@@ -38,13 +32,9 @@ class Owner(commands.Cog):
     async def load(self, ctx, extension):
         """Load an extension.
 
-        This assumes that the file you want to load is in the "cogs"
-        folder.
-
         Args:
             extension: the extension to load
         """
-        extension = f'cogs.{extension}'
         try:
             self.bot.load_extension(extension)
         except (AttributeError, ImportError) as ex:
