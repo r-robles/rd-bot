@@ -25,7 +25,11 @@ class MessageUtils:
         return f'{seconds} {seconds_text}'
 
     @staticmethod
-    def convert_time(time: datetime):
+    def stringify_datetime(time: datetime):
+        """
+        Returns:
+            a readable and formatted version of a datetime object
+        """
         return time.strftime('%B %d, %Y at %H:%M:%S UTC')
 
 

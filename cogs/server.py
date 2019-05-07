@@ -20,7 +20,7 @@ class Server(commands.Cog):
             [role.name for role in guild.roles if role.name != '@everyone'])
         num_text_channels = len(guild.text_channels)
         num_voice_channels = len(guild.voice_channels)
-        create_time = MessageUtils.convert_time(guild.created_at)
+        create_time = MessageUtils.stringify_datetime(guild.created_at)
 
         embed = ColoredEmbed(title=guild.name)
         embed.add_field(name='ID', value=guild.id)
@@ -65,8 +65,8 @@ class Server(commands.Cog):
 
         roles = ", ".join(
             [r.name for r in member.roles if r.name != '@everyone']) or 'None'
-        join_time = MessageUtils.convert_time(member.joined_at)
-        register_time = MessageUtils.convert_time(member.created_at)
+        join_time = MessageUtils.stringify_datetime(member.joined_at)
+        register_time = MessageUtils.stringify_datetime(member.created_at)
         activity = member.activity.name if member.activity else 'None'
 
         embed = ColoredEmbed()
