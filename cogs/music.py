@@ -154,22 +154,22 @@ class Music(commands.Cog):
 
     @commands.command(name='playfrom', aliases=['pf'])
     @commands.guild_only()
-    async def playfrom(self, ctx, index: int):
+    async def playfrom(self, ctx, track: int):
         """Play the queue from a specific track number.
 
         All tracks before this will be discarded.
 
         Args
         ----
-        index:
+        track:
             the track number in the queue to start playing from
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
-        if index < 1 or index > len(player.queue):
+        if track < 1 or track > len(player.queue):
             return await ctx.send('This track number does not exist.')
 
-        await player.play_at(index-1)
+        await player.play_at(track-1)
 
     @commands.command()
     @commands.guild_only()
@@ -321,12 +321,12 @@ class Music(commands.Cog):
 
     @commands.command(name='remove')
     @commands.guild_only()
-    async def remove(self, ctx, index: int):
+    async def remove(self, ctx, track: int):
         """Remove a track from the queue.
 
         Args
         ----
-        index:
+        track:
             the track number to remove from the queue
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -334,10 +334,10 @@ class Music(commands.Cog):
         if not player.queue:
             return await ctx.send('There are no tracks in the queue.')
 
-        if not 0 < index <= len(player.queue):
-            return await ctx.send(f'Index has to be **between** 1 and {len(player.queue)}')
+        if not 0 < track <= len(player.queue):
+            return await ctx.send(f'Track number must be **between** 1 and {len(player.queue)}')
 
-        removed = player.queue.pop(index - 1)
+        removed = player.queue.pop(track - 1)
 
         await ctx.send(f'Removed **{removed.title}** from the queue.')
 
