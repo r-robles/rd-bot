@@ -13,7 +13,7 @@ config.read('config.ini')
 
 
 async def run_bot():
-    bot = Bot(command_prefix=get_prefix)
+    bot = Bot(command_prefix=get_prefix, case_insensitive=True)
 
     try:
         await bot.start(config['Discord']['token'])

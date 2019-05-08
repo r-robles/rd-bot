@@ -80,7 +80,7 @@ class Server(commands.Cog):
         embed.add_field(name='Roles', value=roles, inline=False)
         await ctx.send(embed=embed)
 
-    @commands.group()
+    @commands.group(case_insensitive=True)
     async def prefix(self, ctx):
         """Manage the prefixes for invoking commands.
         """

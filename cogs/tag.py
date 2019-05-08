@@ -28,7 +28,7 @@ class Tag(commands.Cog):
         query = 'select * from tags where name = $1 and guild_id = $2;'
         return await self.bot.database.fetchrow(query, tag, guild_id)
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(invoke_without_command=True, case_insensitive=True)
     async def tag(self, ctx, *, tag: TagConverter = None):
         """Search, create, edit, or remove a tag.
 
