@@ -31,11 +31,8 @@ class Fun(commands.Cog):
         """Ask the magic 8 ball.
 
         Args:
-            question: the question to ask (must end with "?")
+            question: the question to ask
         """
-        if not question.endswith('?'):
-            await ctx.send('That\'s not a question!')
-            return
         responses = ['It is certain.',
                      'It is decidedly so.',
                      'Without a doubt.',
