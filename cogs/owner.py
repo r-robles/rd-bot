@@ -22,13 +22,9 @@ class Owner(commands.Cog):
         extension:
             the extension to reload
         """
-        try:
-            self.bot.unload_extension(extension)
-            self.bot.load_extension(extension)
-        except (AttributeError, ImportError) as ex:
-            await ctx.send(f'```py\n{type(ex).__name__}: {str(ex)}\n```')
-            return
-        await ctx.send(f'{extension} has been successfully reloaded.')
+        self.bot.unload_extension(extension)
+        self.bot.load_extension(extension)
+        await ctx.message.add_reaction('✅')
 
     @commands.command()
     async def load(self, ctx, extension):
@@ -39,12 +35,8 @@ class Owner(commands.Cog):
         extension:
             the extension to load
         """
-        try:
-            self.bot.load_extension(extension)
-        except (AttributeError, ImportError) as ex:
-            await ctx.send(f'```py\n{type(ex).__name__}: {str(ex)}\n```')
-            return
-        await ctx.send(f'{extension} has been successfully loaded.')
+        self.bot.load_extension(extension)
+        await ctx.message.add_reaction('✅')
 
     @commands.command()
     async def unload(self, ctx, extension):
@@ -55,12 +47,8 @@ class Owner(commands.Cog):
         extension:
             the extension to unload
         """
-        try:
-            self.bot.unload_extension(extension)
-        except (AttributeError, ImportError) as ex:
-            await ctx.send(f'```py\n{type(ex).__name__}: {str(ex)}\n```')
-            return
-        await ctx.send(f'{extension} has been successfully unloaded.')
+        self.bot.unload_extension(extension)
+        await ctx.message.add_reaction('✅')
 
     @commands.command()
     async def bash(self, ctx, *, command):
@@ -99,6 +87,15 @@ class Owner(commands.Cog):
             result = stderr.decode('utf-8')
 
         await ctx.send(f'```{result}```')
+
+    @reload.error
+    @load.error
+    @unload.error
+    async def extension_load_error(self, ctx, error):
+        """Error handler for extension loading."""
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.message.add_reaction('❌')
+            await ctx.send(f'```{error}```')
 
 
 def setup(bot):
