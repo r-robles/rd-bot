@@ -176,6 +176,13 @@ class Server(commands.Cog):
         formatted_prefixes = map(lambda x: f'`{x}`', current_prefixes)
         await ctx.send(f'Here are the new prefixes for this server:\n{", ".join(formatted_prefixes)}')
 
+    @avatar.error
+    @userinfo.error
+    async def handle_member_not_found(self, ctx, error):
+        """Error handler for members not being found."""
+        if isinstance(error, commands.BadArgument):
+            await ctx.send(error)
+
 
 def setup(bot):
     bot.add_cog(Server(bot))

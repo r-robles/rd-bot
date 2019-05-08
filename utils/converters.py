@@ -8,8 +8,8 @@ class InsensitiveMemberConverter(MemberConverter):
             return await super().convert(ctx, argument)
         except Exception as e:
             member_to_find = argument.lower()
-            predicate = (lambda m: member_to_find in m.display_name.lower()
-                         or member_to_find in m.name.lower())
+            predicate = (lambda m: member_to_find in m.name.lower()
+                         or member_to_find in m.display_name.lower())
             result = utils.find(predicate, ctx.guild.members)
             if result:
                 return result
