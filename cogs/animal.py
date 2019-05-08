@@ -11,8 +11,7 @@ class Animal(commands.Cog):
 
     @commands.command()
     async def cat(self, ctx):
-        """Get a random picture of a cat.
-        """
+        """Get a random picture of a cat."""
         async with self.bot.session.get('http://aws.random.cat/meow') as r:
             if r.status == 200:
                 json = await r.json()
@@ -22,8 +21,7 @@ class Animal(commands.Cog):
 
     @commands.command()
     async def dog(self, ctx):
-        """Get a random picture of a dog.
-        """
+        """Get a random picture of a dog."""
         img = None
         while not img:
             async with self.bot.session.get('https://random.dog/woof.json') as r:

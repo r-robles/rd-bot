@@ -12,8 +12,7 @@ class Server(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def serverinfo(self, ctx):
-        """Get information about the server.
-        """
+        """Get information about the server."""
         guild = ctx.guild
 
         roles = ', '.join(
@@ -39,8 +38,11 @@ class Server(commands.Cog):
     async def avatar(self, ctx, *, member: InsensitiveMemberConverter = None):
         """Get someone's avatar.
 
-        Args:
-            member (optional): the member. Defaults to the invoker if a member is not specified
+        Args
+        ----
+        member:
+            the member whose avatar you want to get. Defaults to
+            yourself if a member is not specified
         """
         if member is None:
             member = ctx.author
@@ -57,8 +59,11 @@ class Server(commands.Cog):
     async def userinfo(self, ctx, *, member: InsensitiveMemberConverter = None):
         """Get information about a user.
 
-        Args:
-            member (optional): the member. Defaults to the invoker if a member is not specified
+        Args
+        ----
+        member:
+            the member to get information about. Defaults to youself
+            if a member is not specified
         """
         if member is None:
             member = ctx.author
@@ -82,24 +87,25 @@ class Server(commands.Cog):
 
     @commands.group(case_insensitive=True)
     async def prefix(self, ctx):
-        """Manage the prefixes for invoking commands.
-        """
+        """Manage the prefixes for invoking commands."""
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
     @prefix.command(name='list')
     async def prefix_list(self, ctx):
-        """List the prefixes for this server.
-        """
+        """List the prefixes for this server."""
         prefixes = map(lambda x: f'`{x}`', self.bot.prefixes[ctx.guild.id])
         await ctx.send(f'Here are the prefixes for this server:\n{", ".join(prefixes)}')
 
     async def _update_prefixes(self, guild_id, prefixes):
         """Update the database and cache with the new prefixes for the guild.
 
-        Args:
-            guild_id (int): the id of the guild to update
-            prefixes (str[]): the updated list of prefixes
+        Args
+        ----
+        guild_id: int
+            the id of the guild to update
+        prefixes: str[]
+            the updated list of prefixes
         """
         query = "update prefixes set prefixes = $1 where guild_id = $2;"
         await self.bot.database.execute(query, prefixes, guild_id)
@@ -114,11 +120,14 @@ class Server(commands.Cog):
         If you want your prefix to contain spaces in the middle or end,
         then the prefix should be enclosed in double quotes.
 
-        Required Permissions:
-            Manage Guild
+        Required Permissions
+        --------------------
+        Manage Guild
 
-        Args:
-            prefix: the prefix to add
+        Args
+        ----
+        prefix:
+            the prefix to add
         """
         prefix_to_add = prefix.lstrip(' ')
 
@@ -144,8 +153,14 @@ class Server(commands.Cog):
         For prefixes that contain spaces in the middle or at the end,
         enclose the prefix in double quotes.
 
-        Args:
-            prefix: the prefix to remove
+        Required Permissions
+        --------------------
+        Manage Guild
+
+        Args
+        ----
+        prefix:
+            the prefix to remove
         """
         guild_id = ctx.guild.id
         current_prefixes = self.bot.prefixes[guild_id]

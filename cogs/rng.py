@@ -10,15 +10,13 @@ class RNG(commands.Cog):
 
     @commands.command()
     async def roll(self, ctx):
-        """Roll a six-sided dice.
-        """
+        """Roll a six-sided dice."""
         num = random.randint(1, 6)
         await ctx.send(f'You rolled a {num}!')
 
     @commands.command()
     async def flip(self, ctx):
-        """Flip a coin.
-        """
+        """Flip a coin."""
         flipped = random.choice(['heads', 'tails'])
         await ctx.send(f'You flipped {flipped}!')
 

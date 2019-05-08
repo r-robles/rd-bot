@@ -17,8 +17,10 @@ class Owner(commands.Cog):
     async def reload(self, ctx, extension):
         """Reload an extension.
 
-        Args:
-            extension: the extension to reload
+        Args
+        ----
+        extension:
+            the extension to reload
         """
         try:
             self.bot.unload_extension(extension)
@@ -32,8 +34,10 @@ class Owner(commands.Cog):
     async def load(self, ctx, extension):
         """Load an extension.
 
-        Args:
-            extension: the extension to load
+        Args
+        ----
+        extension:
+            the extension to load
         """
         try:
             self.bot.load_extension(extension)
@@ -46,8 +50,10 @@ class Owner(commands.Cog):
     async def unload(self, ctx, extension):
         """Load an extension.
 
-        Args:
-            extension: the extension to unload
+        Args
+        ----
+        extension:
+            the extension to unload
         """
         try:
             self.bot.unload_extension(extension)
@@ -60,8 +66,10 @@ class Owner(commands.Cog):
     async def bash(self, ctx, *, command):
         """Run a bash command.
 
-        Args:
-            command: the bash command to invoke
+        Args
+        ----
+        command:
+            the bash command to invoke
         """
         try:
             process = await asyncio.create_subprocess_shell(

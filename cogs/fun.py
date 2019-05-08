@@ -10,8 +10,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def xkcd(self, ctx):
-        """See the latest XKCD comic.
-        """
+        """See the latest XKCD comic."""
         async with self.bot.session.get('https://xkcd.com/info.0.json') as r:
             if r.status == 200:
                 json = await r.json()
@@ -22,16 +21,17 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def lenny(self, ctx):
-        """( ͡° ͜ʖ ͡°)
-        """
+        """( ͡° ͜ʖ ͡°)"""
         await ctx.send('( ͡° ͜ʖ ͡°)')
 
     @commands.command(name='8ball')
     async def eight_ball(self, ctx, *, question):
         """Ask the magic 8 ball.
 
-        Args:
-            question: the question to ask
+        Args
+        ----
+        question:
+            the question to ask
         """
         responses = ['It is certain.',
                      'It is decidedly so.',

@@ -47,10 +47,14 @@ class Music(commands.Cog):
     async def _create_np_embed(self, player, track, source):
         """Creates an embed showing the track currently playing.
 
-        Args:
-            player: the music player for the guild
-            track: the track currently playing
-            source (NPEmbedSource): where this function is being called from
+        Args
+        ----
+        player:
+            the music player for the guild
+        track:
+            the track currently playing
+        source:
+            where this function is being called from
         """
         embed = ColoredEmbed(title='Now Playing',
                              description=f'[{track.title}]({track.uri})')
@@ -78,7 +82,7 @@ class Music(commands.Cog):
         return embed
 
     async def handle_events(self, event):
-        """Event handler for when tracks start and when the queue is clear."""
+        """Handlers for Lavalink events."""
         if isinstance(event, lavalink.Events.TrackStartEvent):
             channel = self.bot.get_channel(event.player.fetch('channel'))
 
@@ -97,12 +101,14 @@ class Music(commands.Cog):
     async def play(self, ctx, *, query: str = None):
         """Play the track or playlist you want.
 
-        If the bot is already playing something, then the track/playlist will
-        be added to the end of the queue.
+        If the bot is already playing something, then the track/playlist
+        will be added to the end of the queue.
 
-        Args:
-            query: the url or query of the track/song you want to play
-                If no query is specified, the first track in the queue is played.
+        Args
+        ----
+        query:
+            the url or query of the track/song you want to play. If no
+            query is specified, the first track in the queue is played.
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -153,8 +159,10 @@ class Music(commands.Cog):
 
         All tracks before this will be discarded.
 
-        Args:
-            index: the track number in the queue to start playing from
+        Args
+        ----
+        index:
+            the track number in the queue to start playing from
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -168,8 +176,11 @@ class Music(commands.Cog):
     async def seek(self, ctx, *, time: int = None):
         """Seek to a given position in a track.
 
-        Args:
-            time: the amount of seconds to move forward or backward in the track
+        Args
+        ----
+        time:
+            the amount of seconds to move forward or backward in the
+            track
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -226,8 +237,10 @@ class Music(commands.Cog):
     async def queue(self, ctx, page: int = 1):
         """Show the player's queue.
 
-        Args:
-            page: the page number to show in the queue
+        Args
+        ----
+        page:
+            the page number to show in the queue
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -272,9 +285,11 @@ class Music(commands.Cog):
     async def volume(self, ctx, volume: int = None):
         """Change the player's volume.
 
-        Args:
-            volume: the new volume to be set
-                If volume is not specified, the current volume will be shown.
+        Args
+        ----
+        volume:
+            the new volume to be set. If volume is not specified, the
+            current volume will be shown.
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -309,8 +324,10 @@ class Music(commands.Cog):
     async def remove(self, ctx, index: int):
         """Remove a track from the queue.
 
-        Args:
-            index: the track to remove from the queue
+        Args
+        ----
+        index:
+            the track number to remove from the queue
         """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -364,8 +381,8 @@ class Music(commands.Cog):
     @skip.before_invoke
     @now_playing.before_invoke
     async def ensure_currently_playing(self, ctx):
-        """Ensure the bot is currently playing some music before invoking
-        certain commands."""
+        """Ensure the bot is currently playing some music before
+        invoking certain commands."""
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
         if not player.is_playing:

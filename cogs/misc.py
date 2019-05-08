@@ -65,8 +65,10 @@ class Misc(commands.Cog):
     async def screenshot(self, ctx, link: str):
         """Preview a web page without clicking on it.
 
-        Args:
-            link: the link to preview
+        Args
+        ----
+        link:
+            the link to preview
         """
         if not link.startswith('http://') and not link.startswith('https://'):
             link = 'http://' + link

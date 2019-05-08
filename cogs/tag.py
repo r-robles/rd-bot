@@ -5,11 +5,10 @@ from utils.messages import ColoredEmbed
 class TagConverter(commands.clean_content):
     async def convert(self, ctx, tag):
         """
-        Returns:
-            the tag in lowercase with leading and trailing whitespaces
-                removed
-            If no tag was entered to begin with, an empty string is
-                returned
+        Returns
+        -------
+        the tag in lowercase with leading and trailing whitespaces
+        removed, or an empty string if no tag was entered to begin with
         """
         if not tag:
             return ''
@@ -54,9 +53,12 @@ class Tag(commands.Cog):
 
         Tags can only be seen in the server they were created in.
 
-        Args:
-            tag: the name of the tag to create
-            content (optional): the contents of the tag
+        Args
+        ----
+        tag:
+            the name of the tag to create
+        content:
+            the contents of the tag
         """
         if not tag:
             return await ctx.send('You must enter a tag to create!')
@@ -81,9 +83,12 @@ class Tag(commands.Cog):
         If your tag is more than one word, then it should be
         enclosed in double quotes.
 
-        Args:
-            tag: the tag to edit
-            content: the new content
+        Args
+        ----
+        tag:
+            the tag to edit
+        content:
+            the new content
         """
         result = await self.search_tag(tag, ctx.guild.id)
 
@@ -106,8 +111,10 @@ class Tag(commands.Cog):
     async def remove_tag(self, ctx, *, tag: TagConverter = None):
         """Remove a tag you own.
 
-        Args:
-            tag: the tag to remove
+        Args
+        ----
+        tag:
+            the tag to remove
         """
         result = await self.search_tag(tag, ctx.guild.id)
 
@@ -130,12 +137,15 @@ class Tag(commands.Cog):
         """Format the tags from the resulting database query into a
         string.
 
-        Args:
-            record_result: the result from the database query
+        Args
+        ----
+        record_result:
+            the result from the database query
 
-        Returns:
-            a string containing the list of tags that start with
-            bullet points and are separated by new lines
+        Returns
+        -------
+        a string containing the list of tags that start with bullet
+        points and are separated by new lines
         """
         bulletized = ''
         for record in record_result:
@@ -144,8 +154,7 @@ class Tag(commands.Cog):
 
     @tag.command(name='list')
     async def list_tags(self, ctx):
-        """List all tags that are saved in this server.
-        """
+        """List all tags that are saved in this server. """
         query = "select name from tags where guild_id = $1 order by name;"
         result = await self.bot.database.fetch(query, ctx.guild.id)
 
@@ -160,8 +169,7 @@ class Tag(commands.Cog):
 
     @tag.command(name='owned')
     async def owned_tags(self, ctx):
-        """List all tags you own in this server.
-        """
+        """List all tags you own in this server."""
         query = "select name from tags where owner = $1 and guild_id = $2 order by name;"
         result = await self.bot.database.fetch(query, ctx.author.id, ctx.guild.id)
 
