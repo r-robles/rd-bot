@@ -1,3 +1,4 @@
+from collections import Counter
 from discord.ext import commands
 from utils.converters import InsensitiveMemberConverter
 from utils.messages import ColoredEmbed, MessageUtils
@@ -15,21 +16,33 @@ class Server(commands.Cog):
         """Get information about the server."""
         guild = ctx.guild
 
+        create_time = MessageUtils.stringify_datetime(guild.created_at)
         roles = ', '.join(
             [role.name for role in guild.roles if role.name != '@everyone'])
-        num_text_channels = len(guild.text_channels)
-        num_voice_channels = len(guild.voice_channels)
-        create_time = MessageUtils.stringify_datetime(guild.created_at)
+        guild_info = '\n'.join((f'**ID**: {guild.id}',
+                                f'**Owner**: {guild.owner}',
+                                f'**Region**: {guild.region}',
+                                f'**Created On**: {create_time}',
+                                f'**Roles**: {roles}'))
 
-        embed = ColoredEmbed(title=guild.name)
-        embed.add_field(name='ID', value=guild.id)
-        embed.add_field(name='Owner', value=f'{guild.owner}')
-        embed.add_field(name='Server Region', value=guild.region)
-        embed.add_field(name='Members', value=guild.member_count)
-        embed.add_field(name='Text Channels', value=num_voice_channels)
-        embed.add_field(name='Voice Channels', value=num_text_channels)
-        embed.add_field(name='Roles', value=roles, inline=False)
-        embed.set_footer(text=f'Created on {create_time}')
+        members = guild.members
+        member_counts = Counter(map(lambda m: m.status.name, members))
+        member_stats = '\n'.join((f'**Online**: {member_counts["online"]}',
+                                  f'**Idle**: {member_counts["idle"]}',
+                                  f'**Do Not Disturb**: {member_counts["dnd"]}',
+                                  f'**Offline**: {member_counts["offline"]}',
+                                  f'**Total**: {len(members)}'))
+
+        text_channels = len(guild.text_channels)
+        voice_channels = len(guild.voice_channels)
+        channel_info = '\n'.join((f'**Text**: {text_channels}',
+                                  f'**Voice**: {voice_channels}'))
+
+        embed = ColoredEmbed()
+        embed.set_author(name=guild, icon_url=guild.icon_url)
+        embed.add_field(name='General Info', value=guild_info, inline=False)
+        embed.add_field(name='Member Stats', value=member_stats, inline=False)
+        embed.add_field(name='Channels', value=channel_info, inline=False)
         embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
 
@@ -54,6 +67,11 @@ class Server(commands.Cog):
         embed.set_image(url=avatar)
         await ctx.send(embed=embed)
 
+    def _format_status(self, status):
+        if status.name == 'dnd':
+            return 'Do Not Disturb'
+        return status.name.capitalize()
+
     @commands.command()
     @commands.guild_only()
     async def userinfo(self, ctx, *, member: InsensitiveMemberConverter = None):
@@ -68,21 +86,25 @@ class Server(commands.Cog):
         if member is None:
             member = ctx.author
 
-        roles = ", ".join(
-            [r.name for r in member.roles if r.name != '@everyone']) or 'None'
+        status = self._format_status(member.status)
         join_time = MessageUtils.stringify_datetime(member.joined_at)
         register_time = MessageUtils.stringify_datetime(member.created_at)
         activity = member.activity.name if member.activity else 'None'
+        roles = ", ".join(
+            [r.name for r in member.roles if r.name != '@everyone']) or 'None'
+        user_info = '\n'.join((f'**Username**: {member}',
+                               f'**Nickname**: {member.nick}',
+                               f'**ID**: {member.id}',
+                               f'**Status**: {status}',
+                               f'**Activity**: {activity}',
+                               f'**Joined On**: {join_time}',
+                               f'**Registered On**: {register_time}',
+                               f'**Roles**: {roles}'))
 
         embed = ColoredEmbed()
         embed.set_thumbnail(url=member.avatar_url)
-        embed.set_author(name=member, icon_url=member.avatar_url)
-        embed.add_field(name='ID', value=member.id)
-        embed.add_field(name='Nickname', value=member.nick)
-        embed.add_field(name='Join Time', value=join_time)
-        embed.add_field(name='Register Time', value=register_time)
-        embed.add_field(name='Activity', value=activity, inline=False)
-        embed.add_field(name='Roles', value=roles, inline=False)
+        embed.set_author(name=member.display_name, icon_url=member.avatar_url)
+        embed.add_field(name='General Info', value=user_info, inline=False)
         await ctx.send(embed=embed)
 
     @commands.group(case_insensitive=True)
