@@ -80,7 +80,7 @@ class Server(commands.Cog):
         Args
         ----
         member:
-            the member to get information about. Defaults to youself
+            the member to get information about. Defaults to yourself
             if a member is not specified
         """
         if member is None:
