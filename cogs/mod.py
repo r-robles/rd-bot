@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from utils.checks import has_guild_permissions
 from utils.converters import ReasonConverter
 
 
@@ -96,6 +97,26 @@ class Mod(commands.Cog):
         messages_deleted = await ctx.channel.purge(limit=limit, before=ctx.message)
         await ctx.send(f'Deleted {len(messages_deleted)} message(s)!', delete_after=10)
         await ctx.message.delete()
+
+    @commands.command(name='voicekick', aliases=['vk'])
+    @has_guild_permissions(move_members=True)
+    @commands.guild_only()
+    async def voice_kick(self, ctx, member: discord.Member):
+        """Kick a member from their current voice channel.
+
+        Required Permissions
+        --------------------
+        Move Members
+
+        Args
+        ----
+        member:
+            the member to kick from the voice channel
+        """
+        if not member.voice:
+            return await ctx.send(f'{member} is not in any voice channel.')
+        await member.edit(voice_channel=None)
+        return await ctx.message.add_reaction('✅')
 
 
 def setup(bot):
