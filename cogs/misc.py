@@ -43,11 +43,10 @@ class Misc(commands.Cog):
         server_stats = "\n".join((f'**Servers**: {len(self.bot.guilds)}',
                                   f'**Members**: {len(self.bot.users)}'))
 
-        cpu_usage = self.bot.process.cpu_percent() / psutil.cpu_count()
+        cpu_usage_stat = f'{self.bot.process.cpu_percent():.2f}%'
         ram_used = self.bot.process.memory_full_info().uss / (1024 ** 2)
         total_ram = psutil.virtual_memory().total / (1024 ** 2)
         ram_percentage = (ram_used / total_ram) * 100
-        cpu_usage_stat = f'{cpu_usage:.2f}%'
         ram_usage_stat = f'{ram_used:.2f} MiB ({ram_percentage:.2f}%)'
         process_stats = "\n".join((f'**CPU Usage**: {cpu_usage_stat}',
                                    f'**RAM Usage**: {ram_usage_stat}'))
