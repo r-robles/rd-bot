@@ -1,5 +1,5 @@
 discord.py[voice]>=1.1.0
-psutil
-asyncpg
-arsenic
-lavalink
+psutil==5.6.3
+asyncpg==0.18.3
+arsenic==19.1
+lavalink==2.1.10
