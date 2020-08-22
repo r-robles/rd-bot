@@ -4,7 +4,7 @@ This is a Discord bot written in Python.
 ## Requirements
 * Python 3.6 or higher
 * PostgreSQL 9 or higher
-* Java 8 or higher
+* Java 13
 * [Lavalink](https://github.com/Frederikam/Lavalink)
 * Google Chrome
 * Chromedriver
