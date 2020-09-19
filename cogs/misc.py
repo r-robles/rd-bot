@@ -14,6 +14,7 @@ class Misc(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.process = psutil.Process()
 
     @commands.command()
     async def ping(self, ctx):

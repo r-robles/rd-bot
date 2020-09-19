@@ -29,14 +29,21 @@ class Music(commands.Cog):
         self.bot = bot
 
         if not hasattr(bot, 'lavalink'):
-            self.bot.lavalink = lavalink.Client(bot=bot,
-                                                host=self.bot.config['Lavalink']['host'],
-                                                password=self.bot.config['Lavalink']['password'],
-                                                rest_port=self.bot.config['Lavalink']['port'],
-                                                ws_port=self.bot.config['Lavalink']['port'],
-                                                log_level=logging.DEBUG,
-                                                loop=bot.loop)
+            self.bot.lavalink = self._initialize_client()
         self.bot.lavalink.register_hook(self.handle_events)
+
+    def _initialize_client(self):
+        config = self.bot.config['Lavalink']
+        try:
+            return lavalink.Client(bot=self.bot,
+                            host=config['host'],
+                            password=config['password'],
+                            rest_port=config['port'],
+                            ws_port=config['port'],
+                            log_level=logging.INFO,
+                            loop=self.bot.loop)
+        except Exception as e:
+            raise commands.ExtensionFailed('Failed to connect to Lavalink server.')
 
     def cog_unload(self):
         for guild_id, player in self.bot.lavalink.players:
