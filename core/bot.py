@@ -5,10 +5,12 @@ import logging
 import os
 import psutil
 import discord
-import asyncpg
 from discord.ext import commands
+from database.models.prefix import Prefix
 
 log = logging.getLogger(__name__)
+
+DEFAULT_PREFIX = '-'
 
 async def get_prefix(bot, ctx):
     guild_id = ctx.guild.id
@@ -16,16 +18,14 @@ async def get_prefix(bot, ctx):
     if guild_id in bot.prefixes:
         return commands.when_mentioned_or(*bot.prefixes[guild_id])(bot, ctx)
 
-    query = 'select prefixes from prefixes where guild_id = $1;'
-    prefixes = await bot.database.fetchval(query, guild_id)
-    if not prefixes:
-        prefixes = ['-']
-        query = 'insert into prefixes(guild_id, prefixes) values($1, $2);'
-        await bot.database.execute(query, guild_id, prefixes)
+    model = await Prefix.get(guild_id)
+    if not model:
+        prefix = DEFAULT_PREFIX
+        model = await Prefix.create(guild_id=guild_id, prefix=prefix)
 
-    bot.prefixes[guild_id] = prefixes
+    bot.prefixes[guild_id] = model.prefix
 
-    return commands.when_mentioned_or(*prefixes)(bot, ctx)
+    return commands.when_mentioned_or(model.prefix)(bot, ctx)
 
 
 class Bot(commands.Bot):
@@ -37,11 +37,8 @@ class Bot(commands.Bot):
         self.session = aiohttp.ClientSession(loop=self.loop)
 
         self.startup_time = datetime.datetime.utcnow()
-
         self.prefixes = {}
-
         self.config = config
-        self.database = database
 
     async def on_ready(self):
         log.info(f'Bot is now online as {self.user}.')

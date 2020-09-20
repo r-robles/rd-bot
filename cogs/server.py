@@ -1,5 +1,6 @@
 from collections import Counter
 from discord.ext import commands
+from database.models.prefix import Prefix
 from utils.converters import InsensitiveMemberConverter
 from utils.messages import ColoredEmbed, MessageUtils
 
@@ -113,31 +114,29 @@ class Server(commands.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.send_help(ctx.command)
 
-    @prefix.command(name='list')
-    async def prefix_list(self, ctx):
-        """List the prefixes for this server."""
-        prefixes = map(lambda x: f'`{x}`', self.bot.prefixes[ctx.guild.id])
-        await ctx.send(f'Here are the prefixes for this server:\n{", ".join(prefixes)}')
+    @prefix.command(name='show')
+    async def prefix_show(self, ctx):
+        """Show the prefix for this server."""
+        await ctx.send(f'The prefix for this server is `{self.bot.prefixes[ctx.guild.id]}`.')
 
-    async def _update_prefixes(self, guild_id, prefixes):
-        """Update the database and cache with the new prefixes for the guild.
+    async def _update_prefix(self, model, prefix, guild_id):
+        """Update the database and cache with the new prefix for this server.
 
         Args
         ----
-        guild_id: int
-            the id of the guild to update
-        prefixes: str[]
-            the updated list of prefixes
+        model:
+            the prefix model to update
+        prefix:
+            the new prefix for the server
+        guild_id:
+            the guild id of the server
         """
-        query = "update prefixes set prefixes = $1 where guild_id = $2;"
-        await self.bot.database.execute(query, prefixes, guild_id)
+        await model.update(prefix=prefix).apply()
+        self.bot.prefixes[guild_id] = prefix
 
-        self.bot.prefixes[guild_id] = prefixes
-
-    @commands.has_permissions(manage_guild=True)
-    @prefix.command(name='add')
-    async def prefix_add(self, ctx, prefix: str):
-        """Add a new prefix to this server.
+    @prefix.command(name='update')
+    async def prefix_update(self, ctx, prefix: str):
+        """Update the prefix for this server.
 
         If you want your prefix to contain spaces in the middle or end,
         then the prefix should be enclosed in double quotes.
@@ -149,54 +148,16 @@ class Server(commands.Cog):
         Args
         ----
         prefix:
-            the prefix to add
+            the new prefix for this server.
         """
-        prefix_to_add = prefix.lstrip(' ')
+        # Since sent messages are left-stripped of whitespaces, we don't want them to
+        # start with whitespaces either.
+        new_prefix = prefix.lstrip()
 
-        guild_id = ctx.guild.id
-        current_prefixes = self.bot.prefixes[guild_id]
+        model = await Prefix.get(ctx.guild.id)
+        await self._update_prefix(model, new_prefix, ctx.guild.id)
 
-        if prefix_to_add in current_prefixes:
-            return await ctx.send(f'`{prefix}` is already a prefix for this server!')
-        if len(prefix_to_add) == 0:
-            return await ctx.send(f'You must enter a prefix to add!')
-
-        current_prefixes.append(prefix_to_add)
-        await self._update_prefixes(guild_id, current_prefixes)
-
-        formatted_prefixes = map(lambda x: f'`{x}`', current_prefixes)
-        await ctx.send(f'Here are the new prefixes for this server:\n{", ".join(formatted_prefixes)}')
-
-    @commands.has_permissions(manage_guild=True)
-    @prefix.command(name='remove', aliases=['delete'])
-    async def prefix_remove(self, ctx, prefix: str):
-        """Remove a prefix from this server.
-
-        For prefixes that contain spaces in the middle or at the end,
-        enclose the prefix in double quotes.
-
-        Required Permissions
-        --------------------
-        Manage Guild
-
-        Args
-        ----
-        prefix:
-            the prefix to remove
-        """
-        guild_id = ctx.guild.id
-        current_prefixes = self.bot.prefixes[guild_id]
-
-        if prefix not in current_prefixes:
-            return await ctx.send(f'`{prefix}` is not a prefix for this server!')
-        if len(current_prefixes) == 1:
-            return await ctx.send(f'You must have at least 1 prefix remaining for this server.')
-
-        current_prefixes.remove(prefix)
-        await self._update_prefixes(guild_id, current_prefixes)
-
-        formatted_prefixes = map(lambda x: f'`{x}`', current_prefixes)
-        await ctx.send(f'Here are the new prefixes for this server:\n{", ".join(formatted_prefixes)}')
+        await ctx.send(f'The prefix for this server is now updated to `{new_prefix}`.')
 
     @avatar.error
     @userinfo.error

@@ -1,9 +1,10 @@
 import asyncio
 import configparser
 import logging
-import asyncpg
+import time
 from discord.ext import commands
 from core.bot import Bot
+from database import connect_to_database, disconnect_from_database
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -13,34 +14,19 @@ log = logging.getLogger(__name__)
 def set_up_logging():
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+    logging.Formatter.converter = time.gmtime
 
-async def connect_to_database():
-    credentials = config['PostgreSQL']
-
-    database_credentials = {
-        "user": credentials['user'],
-        "password": credentials['password'],
-        "database": credentials['database'],
-        "host": credentials['host']
-    }
-
-    try:
-        return await asyncpg.create_pool(**database_credentials)
-    except:
-        log.error('Failed to connect to database.')
-
-async def run_bot(config, database):
-    bot = Bot(config=config,
-              database=database)
+async def run_bot(config):
+    bot = Bot(config=config)
     try:
         await bot.start(config['Discord']['token'])
     except KeyboardInterrupt:
-        await database.close()
+        await disconnect_from_database()
         await bot.logout()
 
 async def main():
-    database = await connect_to_database()
-    await run_bot(config, database)
+    await connect_to_database(config['PostgreSQL'])
+    await run_bot(config)
 
 if __name__ == '__main__':
     set_up_logging()
