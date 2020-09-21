@@ -3,6 +3,7 @@ from discord.ext import commands
 from database.models.tag import Tag
 from utils.messages import ColoredEmbed
 
+
 class TagConverter(commands.clean_content):
     async def convert(self, ctx, tag):
         """
@@ -113,7 +114,7 @@ class Tags(commands.Cog):
 
         Args
         ----
-        record_result:
+        records:
             the result from the database query
 
         Returns

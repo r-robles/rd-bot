@@ -1,16 +1,14 @@
 import aiohttp
-import asyncio
 import datetime
 import logging
 import os
-import psutil
 import discord
 from discord.ext import commands
 from database.models.prefix import Prefix
 
+DEFAULT_PREFIX = '-'
 log = logging.getLogger(__name__)
 
-DEFAULT_PREFIX = '-'
 
 async def get_prefix(bot, ctx):
     guild_id = ctx.guild.id
@@ -29,7 +27,7 @@ async def get_prefix(bot, ctx):
 
 
 class Bot(commands.Bot):
-    def __init__(self, config=None, database=None, *args, **kwargs):
+    def __init__(self, config=None, *args, **kwargs):
         super().__init__(command_prefix=get_prefix,
                          *args,
                          **kwargs)

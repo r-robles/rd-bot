@@ -1,4 +1,3 @@
-from datetime import datetime
 from discord.ext import commands
 from utils.messages import ColoredEmbed
 
@@ -16,7 +15,7 @@ class Animal(commands.Cog):
             if r.status == 200:
                 json = await r.json()
                 img = json['file']
-                embed = self._create_embed(img)
+                embed = self._create_image_only_embed(img)
                 await ctx.send(embed=embed)
 
     @commands.command()
@@ -32,12 +31,12 @@ class Animal(commands.Cog):
                         img = None
                         continue
                     else:
-                        embed = self._create_embed(img)
+                        embed = self._create_image_only_embed(img)
                         await ctx.send(embed=embed)
 
-    def _create_embed(self, img: str):
+    def _create_image_only_embed(self, image: str):
         embed = ColoredEmbed()
-        embed.set_image(url=img)
+        embed.set_image(url=image)
         return embed
 
 

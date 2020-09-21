@@ -25,8 +25,8 @@ class Mod(commands.Cog):
 
         Args
         ----
-        member:
-            the member to kick
+        user:
+            the user to kick
         reason (optional):
             the reason for kicking the member
         """
@@ -57,8 +57,8 @@ class Mod(commands.Cog):
 
         Args
         ----
-        member:
-            the member to ban
+        user:
+            the user to ban
         reason (optional):
             the reason for banning the member
         """
@@ -101,7 +101,7 @@ class Mod(commands.Cog):
     @commands.command(name='voicekick', aliases=['vk'])
     @has_guild_permissions(move_members=True)
     @commands.guild_only()
-    async def voice_kick(self, ctx, member: discord.Member):
+    async def voice_kick(self, ctx, user: discord.Member):
         """Kick a member from their current voice channel.
 
         Required Permissions
@@ -110,12 +110,12 @@ class Mod(commands.Cog):
 
         Args
         ----
-        member:
-            the member to kick from the voice channel
+        user:
+            the user to kick from the voice channel
         """
-        if not member.voice:
-            return await ctx.send(f'{member} is not in any voice channel.')
-        await member.edit(voice_channel=None)
+        if not user.voice:
+            return await ctx.send(f'{user} is not in any voice channel.')
+        await user.edit(voice_channel=None)
         return await ctx.message.add_reaction('✅')
 
 
