@@ -113,3 +113,5 @@ fgo.py
 db/
 
 chromedriver.exe
+
+.idea
