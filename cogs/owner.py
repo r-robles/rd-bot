@@ -2,6 +2,7 @@ import asyncio
 import shlex
 import subprocess
 from discord.ext import commands
+from utils.paginator import CodeBlockPaginator
 
 
 class Owner(commands.Cog):
@@ -86,7 +87,8 @@ class Owner(commands.Cog):
             await msg.add_reaction('❌')
             result = stderr.decode('utf-8')
 
-        await ctx.send(f'```{result}```')
+        content = CodeBlockPaginator.paginate(ctx, result)
+        await content.send_message()
 
     @reload.error
     @load.error
