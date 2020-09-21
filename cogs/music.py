@@ -1,13 +1,12 @@
 from enum import Enum
-import logging
 import math
 import re
-from utils.messages import ColoredEmbed
-from discord.ext import commands
 import lavalink
+from discord.ext import commands
+from lavalink import AudioTrack
+from utils.messages import ColoredEmbed
 
-
-url_rx = re.compile('https?:\/\/(?:www\.)?.+')  # noqa: W605
+url_rx = re.compile('https?:\/\/(?:www\.|(?!www))')
 
 
 class NoTrackPlayingError(commands.CommandInvokeError):
@@ -22,34 +21,47 @@ class NPEmbedSource(Enum):
     NP_COMMAND = 2
 
 
-class Music(commands.Cog):
-    """Commands to play music in a voice channel."""
+class Track(AudioTrack):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+    @property
+    def thumbnail(self):
+        if self.uri.startswith('https://www.youtube'):
+            return f'https://img.youtube.com/vi/{self.identifier}/mqdefault.jpg'
+        return ""
+
+
+class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
         if not hasattr(bot, 'lavalink'):
-            self.bot.lavalink = self._initialize_client()
-        self.bot.lavalink.register_hook(self.handle_events)
-
-    def _initialize_client(self):
-        config = self.bot.config['Lavalink']
-        try:
-            return lavalink.Client(bot=self.bot,
-                            host=config['host'],
-                            password=config['password'],
-                            rest_port=config['port'],
-                            ws_port=config['port'],
-                            log_level=logging.INFO,
-                            loop=self.bot.loop)
-        except Exception as e:
-            raise commands.ExtensionFailed('Failed to connect to Lavalink server.')
+            bot.lavalink = lavalink.Client(bot.user.id)
+            bot.lavalink.add_node(bot.config['Lavalink']['host'],
+                                  bot.config['Lavalink']['port'],
+                                  bot.config['Lavalink']['password'],
+                                  'na',
+                                  'na-node')
+            bot.add_listener(bot.lavalink.voice_update_handler, 'on_socket_response')
+        lavalink.add_event_hook(self.handle_events)
 
     def cog_unload(self):
-        for guild_id, player in self.bot.lavalink.players:
-            self.bot.loop.create_task(player.disconnect())
-            player.cleanup()
-        self.bot.lavalink.unregister_hook(self.handle_events)
+        """Clear all event hooks."""
+        self.bot.lavalink._event_hooks.clear()
+
+    async def handle_events(self, event):
+        # Disconnect from the voice channel if there's no music left in the queue.
+        if isinstance(event, lavalink.QueueEndEvent):
+            guild_id = event.player.guild_id
+            await self._connect_to_voice_channel(guild_id, None)
+        # Send a message showing the current track playing when a new track starts.
+        elif isinstance(event, lavalink.TrackStartEvent):
+            channel = self.bot.get_channel(event.player.fetch('channel'))
+            embed = await self._create_np_embed(event.player,
+                                                event.track,
+                                                NPEmbedSource.TRACK_START_EVENT)
+            await channel.send(embed=embed)
 
     async def _create_np_embed(self, player, track, source):
         """Creates an embed showing the track currently playing.
@@ -66,42 +78,31 @@ class Music(commands.Cog):
         embed = ColoredEmbed(title='Now Playing',
                              description=f'[{track.title}]({track.uri})')
         embed.set_thumbnail(url=track.thumbnail)
-
         requester = await self.bot.fetch_user(track.requester)
         embed.add_field(name='Requested by', value=f'{requester}')
 
         if track.stream:
             duration = '🔴 LIVE'
         else:
-            duration = lavalink.Utils.format_time(track.duration)
+            duration = lavalink.format_time(track.duration)
 
         if source == NPEmbedSource.TRACK_START_EVENT:
             embed.add_field(name='Duration', value=duration)
         elif source == NPEmbedSource.NP_COMMAND:
-            current_time = lavalink.Utils.format_time(player.position)
+            current_time = lavalink.format_time(player.position)
             embed.add_field(name='Current Time',
                             value=f'{current_time} / {duration}')
 
         embed.add_field(name='Volume', value=f'{player.volume}%')
         embed.set_footer(
             text=f'Repeat: {"on" if player.repeat else "off"}, Shuffle: {"on" if player.shuffle else "off"}')
-
         return embed
 
-    async def handle_events(self, event):
-        """Handlers for Lavalink events."""
-        if isinstance(event, lavalink.Events.TrackStartEvent):
-            channel = self.bot.get_channel(event.player.fetch('channel'))
-
-            embed = await self._create_np_embed(event.player, event.track, NPEmbedSource.TRACK_START_EVENT)
-            await channel.send(embed=embed)
-        elif isinstance(event, lavalink.Events.QueueEndEvent):
-            await event.player.disconnect()
-
-    async def cog_command_error(self, ctx, error):
-        """Handler for exceptions raised in music commands."""
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(error.original)
+    async def _connect_to_voice_channel(self, guild_id: int, channel_id: str):
+        """Connect to a voice channel in a guild. If channel_id is None, then the bot will disconnect from its voice
+        channel."""
+        ws = self.bot._connection._get_websocket(guild_id)
+        await ws.voice_state(str(guild_id), channel_id)
 
     @commands.guild_only()
     @commands.command()
@@ -115,43 +116,44 @@ class Music(commands.Cog):
         ----
         query:
             the url or query of the track/song you want to play. If no
-            query is specified, the first track in the queue is played.
+            query is specified, the first track in the queue will be played.
         """
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
 
-        # Play first track in the queue if no query is specified
-        if query is None:
+        # Attempt to play first track in the queue if no query is specified.
+        if not query:
             if not player.queue:
-                return await ctx.send('The queue is empty. Add something to play!')
-
+                return await ctx.send('The queue is empty. Add something to play.')
             if not player.is_playing:
-                play_at_command = self.bot.get_command('playfrom')
-                return await ctx.invoke(play_at_command, 1)
-            else:
-                return await ctx.send('I\'m already playing music in your channel!')
+                return await player.play()
+            return await ctx.send('I\'m already playing music in a voice channel.')
 
+        # Links in messages are surrounded by angled brackets, so we strip these out.
         query = query.strip('<>')
 
-        if not url_rx.match(query):
+        # Prefix query with 'ytsearch:' to default to YouTube searches only when the query
+        # is a link, or when the user specifies a SoundCloud search.
+        if not url_rx.match(query) and not query.startswith('scsearch:'):
             query = f'ytsearch:{query}'
 
-        results = await self.bot.lavalink.get_tracks(query)
+        results = await player.node.get_tracks(query)
 
         if results['loadType'] == 'NO_MATCHES':
             return await ctx.send('No tracks have been found with that name.')
         elif results['loadType'] == 'PLAYLIST_LOADED':
             tracks = results['tracks']
             for track in tracks:
-                player.add(requester=ctx.author.id, track=track)
-
+                player.add(ctx.author.id, Track(track, ctx.author.id))
             embed = ColoredEmbed(title='Playlist Added to Queue',
                                  description=f'{len(tracks)} tracks from [{results["playlistInfo"]["name"]}]({query}) have been added to your queue.')
             await ctx.send(embed=embed)
         elif results['loadType'] == 'SEARCH_RESULT' or results['loadType'] == 'TRACK_LOADED':
             track = results['tracks'][0]
-            player.add(requester=ctx.author.id, track=track)
+            track_to_add = Track(track, ctx.author.id)
+            player.add(ctx.author.id, track_to_add)
             embed = ColoredEmbed(title=f'Track Added to Position {len(player.queue)} in Queue',
-                                 description=f'[{track["info"]["title"]}]({track["info"]["uri"]})')
+                                 description=f'[{track_to_add.title}]({track_to_add.uri})')
+            embed.set_thumbnail(url=track_to_add.thumbnail)
             await ctx.send(embed=embed)
         else:
             return await ctx.send('I am unable to load this video. Try a different one instead.')
@@ -159,29 +161,146 @@ class Music(commands.Cog):
         if not player.is_playing:
             await player.play()
 
+    @commands.guild_only()
+    @commands.command()
+    async def pause(self, ctx):
+        """Pause the music player."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+
+        if player.paused:
+            return await ctx.send('Music player is already paused.')
+        await player.set_pause(True)
+        return await ctx.send('Music player has been paused.')
+
+    @commands.guild_only()
+    @commands.command()
+    async def resume(self, ctx):
+        """Resume the music player."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+
+        if not player.paused:
+            return await ctx.send('Music player has already resumed.')
+        await player.set_pause(False)
+        return await ctx.send('Music player has been resumed.')
+
+    @commands.guild_only()
+    @commands.command()
+    async def skip(self, ctx):
+        """Skip the current track."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+        await player.skip()
+        await ctx.message.add_reaction('✅')
+
+    @commands.guild_only()
+    @commands.command()
+    async def stop(self, ctx):
+        """Disconnect the player from the voice channel."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+        await player.stop()
+        await self._connect_to_voice_channel(ctx.guild.id, None)
+        await ctx.message.add_reaction('✅')
+
+    @commands.command()
+    @commands.guild_only()
+    async def remove(self, ctx, track: int):
+        """Remove a track from the queue.
+
+        Args
+        ----
+        track:
+            the track number to remove from the queue
+        """
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+
+        if not player.queue:
+            return await ctx.send('There are no tracks in the queue.')
+
+        if not 0 < track <= len(player.queue):
+            return await ctx.send(f'Track number must be **between** 1 and {len(player.queue)}')
+
+        removed = player.queue.pop(track - 1)
+        await ctx.send(f'Removed **{removed.title}** from the queue.')
+
+    @commands.guild_only()
+    @commands.command()
+    async def repeat(self, ctx):
+        """Toggle track repeat."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+
+        player.repeat = not player.repeat
+        await ctx.send(f'Repeat is now {"on" if player.repeat else "off"}.')
+
+    @commands.command()
+    @commands.guild_only()
+    async def shuffle(self, ctx):
+        """Toggle track shuffle."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+
+        player.shuffle = not player.shuffle
+        await ctx.send(f'Shuffle is now {"on" if player.shuffle else "off"}.')
+
+    @commands.guild_only()
+    @commands.command()
+    async def clear(self, ctx):
+        """Clear the queue."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+        player.queue.clear()
+        await ctx.send('The queue has been cleared.')
+
+    @commands.command(name='volume', aliases=['vol'])
+    @commands.guild_only()
+    async def volume(self, ctx, volume: int = None):
+        """Change the player's volume.
+
+        Args
+        ----
+        volume:
+            the new volume to be set. If volume is not specified, the
+            current volume will be shown.
+        """
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+
+        if volume is None:
+            return await ctx.send(f'Volume is currently set to {player.volume}%.')
+        elif not 0 <= volume <= 100:
+            return await ctx.send(f'Volume must be between 0 and 100.')
+
+        await player.set_volume(volume)
+        await ctx.send(f'Volume has been set to {player.volume}%.')
+
+    @commands.command(name='np')
+    @commands.guild_only()
+    async def show_current_track(self, ctx):
+        """Show the track currently playing."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
+
+        embed = await self._create_np_embed(player, player.current, NPEmbedSource.NP_COMMAND)
+        await ctx.send(embed=embed)
+
     @commands.command(name='playfrom', aliases=['pf'])
     @commands.guild_only()
     async def playfrom(self, ctx, track: int):
         """Play the queue from a specific track number.
 
-        All tracks before this will be discarded.
+        NOTE: All tracks before this will be discarded.
 
         Args
         ----
         track:
             the track number in the queue to start playing from
         """
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
 
         if track < 1 or track > len(player.queue):
             return await ctx.send('This track number does not exist.')
 
-        await player.play_at(track-1)
+        player.queue = player.queue[track - 1:]
+        await player.play()
 
     @commands.command()
     @commands.guild_only()
     async def seek(self, ctx, *, time: int = None):
-        """Seek to a given position in a track.
+        """Seek forward or backwards in the track.
 
         Args
         ----
@@ -189,7 +308,7 @@ class Music(commands.Cog):
             the amount of seconds to move forward or backward in the
             track
         """
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
 
         if not time:
             return await ctx.send('You need to specify the amount of seconds to skip.')
@@ -197,47 +316,7 @@ class Music(commands.Cog):
         track_time = player.position + (time * 1000)
         await player.seek(track_time)
 
-        await ctx.send(f'Moved track to **{lavalink.Utils.format_time(track_time)}**')
-
-    @commands.guild_only()
-    @commands.command()
-    async def previous(self, ctx):
-        """Play the previous track."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        try:
-            await player.play_previous()
-            await ctx.message.add_reaction('✅')
-        except lavalink.NoPreviousTrack:
-            await ctx.send('No track was previously played.')
-
-    @commands.guild_only()
-    @commands.command()
-    async def skip(self, ctx):
-        """Skip the current track."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        await player.skip()
-        await ctx.message.add_reaction('✅')
-
-    @commands.command(name='disconnect', aliases=['dc', 'stop'])
-    @commands.guild_only()
-    async def disconnect(self, ctx):
-        """Disconnect the player from the voice channel."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        await player.disconnect()
-        await ctx.message.add_reaction('✅')
-
-    @commands.command(name='np')
-    @commands.guild_only()
-    async def now_playing(self, ctx):
-        """Show the track currently playing."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        embed = await self._create_np_embed(
-            player, player.current, NPEmbedSource.NP_COMMAND)
-        await ctx.send(embed=embed)
+        await ctx.send(f'Moved track to **{lavalink.format_time(track_time)}**')
 
     @commands.command(name='queue', aliases=['q'])
     @commands.guild_only()
@@ -249,7 +328,7 @@ class Music(commands.Cog):
         page:
             the page number to show in the queue
         """
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
 
         if not player.queue:
             return await ctx.send('No tracks are currently in the queue.')
@@ -274,94 +353,11 @@ class Music(commands.Cog):
         embed.set_footer(text=f'Page {page}/{pages}')
         await ctx.send(embed=embed)
 
-    @commands.command(name='pause', aliases=['resume'])
-    @commands.guild_only()
-    async def pause_resume(self, ctx):
-        """Pause/resume the current track."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        if player.paused:
-            await player.set_pause(False)
-            await ctx.send('Player has been resumed.')
-        else:
-            await player.set_pause(True)
-            await ctx.send('Player has been paused.')
-
-    @commands.command(name='volume', aliases=['vol'])
-    @commands.guild_only()
-    async def volume(self, ctx, volume: int = None):
-        """Change the player's volume.
-
-        Args
-        ----
-        volume:
-            the new volume to be set. If volume is not specified, the
-            current volume will be shown.
-        """
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        if volume is None:
-            return await ctx.send(f'Volume is currently set to {player.volume}%.')
-        elif not 0 <= volume <= 100:
-            return await ctx.send(f'Volume must be between 0 and 100.')
-
-        await player.set_volume(volume)
-        await ctx.send(f'Volume has been set to {player.volume}%.')
-
-    @commands.command()
-    @commands.guild_only()
-    async def shuffle(self, ctx):
-        """Toggle track shuffle."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        player.shuffle = not player.shuffle
-        await ctx.send(f'Shuffle is now {"on" if player.shuffle else "off"}.')
-
-    @commands.command()
-    @commands.guild_only()
-    async def repeat(self, ctx):
-        """Toggle track repeat."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        player.repeat = not player.repeat
-        await ctx.send(f'Repeat is now {"on" if player.repeat else "off"}.')
-
-    @commands.command(name='remove')
-    @commands.guild_only()
-    async def remove(self, ctx, track: int):
-        """Remove a track from the queue.
-
-        Args
-        ----
-        track:
-            the track number to remove from the queue
-        """
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-
-        if not player.queue:
-            return await ctx.send('There are no tracks in the queue.')
-
-        if not 0 < track <= len(player.queue):
-            return await ctx.send(f'Track number must be **between** 1 and {len(player.queue)}')
-
-        removed = player.queue.pop(track - 1)
-
-        await ctx.send(f'Removed **{removed.title}** from the queue.')
-
-    @commands.command()
-    @commands.guild_only()
-    async def clear(self, ctx):
-        """Clear the queue."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
-        player.queue.clear()
-        await ctx.send('The queue has been cleared.')
-
     @play.before_invoke
-    @previous.before_invoke
     @playfrom.before_invoke
-    async def ensure_voice(self, ctx):
-        """A few checks to make sure the bot can join a voice channel."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+    async def ensure_caller_in_voice_channel(self, ctx):
+        """Ensure caller is in a voice channel and the bot has the correct permissions to join."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
 
         if not player.is_connected:
             if not ctx.author.voice or not ctx.author.voice.channel:
@@ -378,19 +374,19 @@ class Music(commands.Cog):
                     'I am missing `SPEAK` permissions in your voice channel.')
 
             player.store('channel', ctx.channel.id)
-            await player.connect(ctx.author.voice.channel.id)
+            await self._connect_to_voice_channel(ctx.guild.id, str(ctx.author.voice.channel.id))
         else:
-            if player.connected_channel.id != ctx.author.voice.channel.id:
-                return await ctx.send('Join my voice channel!')
+            if int(player.channel_id) != ctx.author.voice.channel.id:
+                return await ctx.send('I am already connected to a voice channel.')
 
-    @pause_resume.before_invoke
+    @pause.before_invoke
+    @resume.before_invoke
     @seek.before_invoke
     @skip.before_invoke
-    @now_playing.before_invoke
+    @show_current_track.before_invoke
     async def ensure_currently_playing(self, ctx):
-        """Ensure the bot is currently playing some music before
-        invoking certain commands."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        """Ensure the bot is currently playing some music before invoking certain commands."""
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
 
         if not player.is_playing:
             raise NoTrackPlayingError('No track is being played right now.')
