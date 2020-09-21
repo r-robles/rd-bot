@@ -37,15 +37,12 @@ class Paginator(ABC):
             self.message = await self.ctx.send(embed=content_to_display)
 
         # Only add arrow reactions if there is more than 1 page in the content
-        log.info(self.pages)
         if len(self.pages) > 1:
-            log.info(f'Page length is {len(self.pages)}. Adding reaction emojis.')
+            log.debug(f'Page length is {len(self.pages)}. Adding reaction emojis.')
             for emoji in self.REACTION_EMOJIS:
                 await self.message.add_reaction(emoji)
 
         def check_reaction(r: discord.Reaction, u: discord.Member):
-            log.info(f'Reaction: {r}')
-            log.info(f'User: {u}')
             return (r.message.id == self.message.id
                     and str(r.emoji) in self.REACTION_EMOJIS
                     and u.id == self.ctx.author.id
@@ -61,10 +58,10 @@ class Paginator(ABC):
 
             new_page = self.current_page
             if str(reaction.emoji) == self.LEFT_ARROW:
-                log.info('Left arrow emoji clicked. Attempting to move to the previous page.')
+                log.debug('Left arrow emoji clicked. Attempting to move to the previous page.')
                 new_page = max(0, self.current_page - 1)
             elif str(reaction.emoji) == self.RIGHT_ARROW:
-                log.info('Right arrow emoji clicked. Attempting to move to the next page.')
+                log.debug('Right arrow emoji clicked. Attempting to move to the next page.')
                 new_page = min(len(self.pages) - 1, self.current_page + 1)
 
             if new_page != self.current_page:
@@ -105,7 +102,7 @@ class CodeBlockPaginator(Paginator):
                 current_page_content = cls.CODE_BLOCK_PREFIX
         # If there's still left over contents, finish the code block and add a new page.
         if current_page_content != cls.CODE_BLOCK_PREFIX:
-            log.debug(f'There is still leftover page content. Creating new page.')
+            log.debug('There is still leftover page content. Creating new page.')
             cls._finish_page(current_page_content, pages)
         return cls(ctx=ctx,
                    pages=pages)
