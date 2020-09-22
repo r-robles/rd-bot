@@ -1,13 +1,15 @@
 from enum import Enum
-import math
+import logging
 import re
 import lavalink
 from discord.ext import commands
 from lavalink import AudioTrack
 from utils.messages import ColoredEmbed
+from utils.paginator import EmbedListPaginator
 
 url_rx = re.compile('https?:\/\/(?:www\.|(?!www))')
 
+log = logging.getLogger(__name__)
 
 class NoTrackPlayingError(commands.CommandInvokeError):
     pass
@@ -27,9 +29,9 @@ class Track(AudioTrack):
 
     @property
     def thumbnail(self):
-        if self.uri.startswith('https://www.youtube'):
+        if self.uri.startswith('https://www.youtube.com'):
             return f'https://img.youtube.com/vi/{self.identifier}/mqdefault.jpg'
-        return ""
+        return ''
 
 
 class Music(commands.Cog):
@@ -49,6 +51,12 @@ class Music(commands.Cog):
     def cog_unload(self):
         """Clear all event hooks."""
         self.bot.lavalink._event_hooks.clear()
+
+    async def cog_command_error(self, ctx, error):
+        """Handler for exceptions raised in music commands."""
+        if isinstance(error, commands.CommandInvokeError):
+            log.warning(f'Exception occurred in music commands: {error}')
+            await ctx.send(error.original)
 
     async def handle_events(self, event):
         # Disconnect from the voice channel if there's no music left in the queue.
@@ -138,14 +146,18 @@ class Music(commands.Cog):
 
         results = await player.node.get_tracks(query)
 
-        if results['loadType'] == 'NO_MATCHES':
+        if not results:
+            return await ctx.send('An error occurred while trying to find your song. Please try again later.')
+        elif results['loadType'] == 'NO_MATCHES':
             return await ctx.send('No tracks have been found with that name.')
         elif results['loadType'] == 'PLAYLIST_LOADED':
             tracks = results['tracks']
             for track in tracks:
                 player.add(ctx.author.id, Track(track, ctx.author.id))
+
             embed = ColoredEmbed(title='Playlist Added to Queue',
-                                 description=f'{len(tracks)} tracks from [{results["playlistInfo"]["name"]}]({query}) have been added to your queue.')
+                                 description=f'{len(tracks)} tracks from [{results["playlistInfo"]["name"]}]({query}) '
+                                             f'have been added to your queue.')
             await ctx.send(embed=embed)
         elif results['loadType'] == 'SEARCH_RESULT' or results['loadType'] == 'TRACK_LOADED':
             track = results['tracks'][0]
@@ -311,12 +323,15 @@ class Music(commands.Cog):
         player = self.bot.lavalink.player_manager.create(ctx.guild.id, region='na')
 
         if not time:
-            return await ctx.send('You need to specify the amount of seconds to skip.')
+            return await ctx.send('You need to specify the amount of seconds to seek.')
 
         track_time = player.position + (time * 1000)
         await player.seek(track_time)
 
         await ctx.send(f'Moved track to **{lavalink.format_time(track_time)}**')
+
+    def _format_tracks_for_pagination(self, tracks):
+        return [f'`{index + 1}.` [**{track.title}**]({track.uri})' for index, track in enumerate(tracks)]
 
     @commands.command(name='queue', aliases=['q'])
     @commands.guild_only()
@@ -333,25 +348,17 @@ class Music(commands.Cog):
         if not player.queue:
             return await ctx.send('No tracks are currently in the queue.')
 
-        items_per_page = 10
-        pages = math.ceil(len(player.queue) / items_per_page)
+        # Make page 0-indexed.
+        current_page = page - 1
 
-        if page > pages:
-            return await ctx.send(f'Page {page} does not exist in this queue.')
+        queue = self._format_tracks_for_pagination(player.queue)
+        title = f'Music Queue for {ctx.guild}'
 
-        start = (page - 1) * items_per_page
-        end = min(start + items_per_page, len(player.queue))
-
-        current_page_queue = player.queue[start:end]
-
-        queue_list = ''
-        for index, track in enumerate(current_page_queue, start=start):
-            queue_list += f'`{index + 1}.` [**{track.title}**]({track.uri})\n'
-
-        embed = ColoredEmbed(title=f'Tracks {start + 1} to {end}',
-                             description=f'{queue_list}')
-        embed.set_footer(text=f'Page {page}/{pages}')
-        await ctx.send(embed=embed)
+        paginated_queue = EmbedListPaginator.paginate(ctx=ctx,
+                                                      items=queue,
+                                                      current_page=current_page,
+                                                      title=title)
+        await paginated_queue.send_message()
 
     @play.before_invoke
     @playfrom.before_invoke

@@ -1,7 +1,7 @@
 from datetime import datetime
 from discord.ext import commands
 from database.models.tag import Tag
-from utils.messages import ColoredEmbed
+from utils.paginator import EmbedListPaginator
 
 
 class TagConverter(commands.clean_content):
@@ -15,7 +15,7 @@ class TagConverter(commands.clean_content):
         if not tag:
             return ''
         result = await super().convert(ctx, tag)
-        result = tag.strip(' ').lower()
+        result = result.strip().lower()
         return result
 
 
@@ -67,8 +67,8 @@ class Tags(commands.Cog):
                                      content=content,
                                      owner=ctx.author.id,
                                      last_modified=datetime.utcnow())
-            return await ctx.send(f'The tag **{tag}** has successfully been created!')
-        except Exception as e:
+            return await ctx.send(f'The tag **{model.name}** has successfully been created!')
+        except Exception:
             return await ctx.send('That tag already exists!')
 
     @tag.command(name='edit')
@@ -108,35 +108,24 @@ class Tags(commands.Cog):
                 return await ctx.send('Your tag has successfully been deleted.')
         return await ctx.send('Either there is no tag with that name or you do not own that tag.')
 
-    def _bulletize_tags(self, records):
+    def _format_tags_for_pagination(self, records):
         """Format the tags from the resulting database query into a
         string.
 
-        Args
-        ----
-        records:
-            the result from the database query
-
-        Returns
-        -------
-        a string containing the list of tags that start with bullet
-        points and are separated by new lines
+        :param records: the result from the database query
+        :returns: a formatted string containing the list of tags from the database query
         """
-        bulletized = ''
-        for record in records:
-            bulletized += f'**∙** {record[0]}\n'
-        return bulletized
+        return [f'`{index + 1}.` {record[0]}' for index, record in enumerate(records)]
 
     @tag.command(name='list')
     async def list_tags(self, ctx):
         """List all tags that are saved in this server. """
         result = await Tag.select('name').where(Tag.guild_id == ctx.guild.id).gino.all()
         if result:
-            tags = self._bulletize_tags(result)
-
-            embed = ColoredEmbed()
-            embed.add_field(name='Tags List', value=tags)
-            await ctx.send(embed=embed)
+            tags = self._format_tags_for_pagination(result)
+            title = f'Tags for {ctx.guild}'
+            paginated_tags = EmbedListPaginator.paginate(ctx=ctx, items=tags, title=title)
+            await paginated_tags.send_message()
         else:
             await ctx.send('No tags have been created in this server!')
 
@@ -146,11 +135,10 @@ class Tags(commands.Cog):
         result = await Tag.select('name').where(Tag.guild_id == ctx.guild.id) \
                                          .where(Tag.owner == ctx.author.id).gino.all()
         if result:
-            tags = self._bulletize_tags(result)
-
-            embed = ColoredEmbed()
-            embed.add_field(name=f'Tags Owned by {ctx.author}', value=tags)
-            await ctx.send(embed=embed)
+            tags = self._format_tags_for_pagination(result)
+            title = f'Tags Owned by {ctx.author}'
+            paginated_tags = EmbedListPaginator.paginate(ctx=ctx, items=tags, title=title)
+            await paginated_tags.send_message()
         else:
             await ctx.send('You don\'t own any tags in this server!')
 
