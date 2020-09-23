@@ -26,38 +26,36 @@ class Misc(commands.Cog):
         time = delta.microseconds / 1000.0
         await message.edit(content=f':ping_pong: Pong! Time: {time} ms.')
 
+    def _convert_b_to_mib(self, b):
+        return b / (1024 ** 2)
+
     @commands.command()
     async def botinfo(self, ctx):
         """See some information about the bot."""
         bot_user = self.bot.user
         app = await self.bot.application_info()
-
-        uptime = MessageUtils.convert_time_delta(
-            datetime.utcnow(), self.bot.startup_time)
-        bot_info = "\n".join((f'**Owner**: {app.owner}',
+        uptime = MessageUtils.convert_time_delta(datetime.utcnow(), self.bot.startup_time)
+        bot_info = '\n'.join((f'**Owner**: {app.owner}',
                               f'**Bot ID**: {bot_user.id}',
                               f'**Language**: Python {platform.python_version()}',
                               f'**Library**: discord.py {discord.__version__}',
                               f'**Websocket Latency**: {1000 * self.bot.latency: .2f} ms',
                               f'**Uptime**: {uptime}'))
-
-        server_stats = "\n".join((f'**Servers**: {len(self.bot.guilds)}',
+        server_stats = '\n'.join((f'**Servers**: {len(self.bot.guilds)}',
                                   f'**Members**: {len(self.bot.users)}'))
-
-        cpu_usage_stat = f'{self.bot.process.cpu_percent():.2f}%'
-        ram_used = self.bot.process.memory_full_info().uss / (1024 ** 2)
-        total_ram = psutil.virtual_memory().total / (1024 ** 2)
+        cpu_usage_stat = f'{self.process.cpu_percent():.2f}%'
+        ram_used = self._convert_b_to_mib(self.process.memory_full_info().uss)
+        total_ram = self._convert_b_to_mib(psutil.virtual_memory().total)
         ram_percentage = (ram_used / total_ram) * 100
         ram_usage_stat = f'{ram_used:.2f} MiB ({ram_percentage:.2f}%)'
-        process_stats = "\n".join((f'**CPU Usage**: {cpu_usage_stat}',
+        process_stats = '\n'.join((f'**CPU Usage**: {cpu_usage_stat}',
                                    f'**RAM Usage**: {ram_usage_stat}'))
 
         embed = ColoredEmbed()
         embed.set_author(name=bot_user, icon_url=bot_user.avatar_url)
         embed.add_field(name='Bot Info', value=bot_info, inline=False)
         embed.add_field(name='Server Stats', value=server_stats, inline=False)
-        embed.add_field(name='Process Stats',
-                        value=process_stats, inline=False)
+        embed.add_field(name='Process Stats', value=process_stats, inline=False)
 
         await ctx.send(embed=embed)
 

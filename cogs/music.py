@@ -1,3 +1,4 @@
+import asyncio
 from enum import Enum
 import logging
 import re
@@ -112,6 +113,14 @@ class Music(commands.Cog):
         ws = self.bot._connection._get_websocket(guild_id)
         await ws.voice_state(str(guild_id), channel_id)
 
+    def _add_tracks_to_queue(self, player_manager, tracks, requester):
+        added = []
+        for t in tracks:
+            track = Track(t, requester)
+            player_manager.add(requester, track)
+            added.append(track)
+        return added
+
     @commands.guild_only()
     @commands.command()
     async def play(self, ctx, *, query: str = None):
@@ -151,21 +160,20 @@ class Music(commands.Cog):
         elif results['loadType'] == 'NO_MATCHES':
             return await ctx.send('No tracks have been found with that name.')
         elif results['loadType'] == 'PLAYLIST_LOADED':
-            tracks = results['tracks']
-            for track in tracks:
-                player.add(ctx.author.id, Track(track, ctx.author.id))
-
-            embed = ColoredEmbed(title='Playlist Added to Queue',
-                                 description=f'{len(tracks)} tracks from [{results["playlistInfo"]["name"]}]({query}) '
-                                             f'have been added to your queue.')
-            await ctx.send(embed=embed)
+            tracks_added = self._add_tracks_to_queue(player, results['tracks'], ctx.author.id)
+            # Show added tracks from playlist
+            formatted_tracks = self._format_tracks_for_pagination(tracks_added)
+            title = f'Playlist {results["playlistInfo"]["name"]} Added to Queue'
+            paginated_tracks = EmbedListPaginator.paginate(ctx=ctx, items=formatted_tracks, title=title,
+                                                           items_per_page=15)
+            # Prevent the pagination controller from blocking the play (at the end).
+            asyncio.create_task(paginated_tracks.send_message())
         elif results['loadType'] == 'SEARCH_RESULT' or results['loadType'] == 'TRACK_LOADED':
-            track = results['tracks'][0]
-            track_to_add = Track(track, ctx.author.id)
-            player.add(ctx.author.id, track_to_add)
+            # Load only the first track
+            track_added, = self._add_tracks_to_queue(player, results['tracks'][:1], ctx.author.id)
             embed = ColoredEmbed(title=f'Track Added to Position {len(player.queue)} in Queue',
-                                 description=f'[{track_to_add.title}]({track_to_add.uri})')
-            embed.set_thumbnail(url=track_to_add.thumbnail)
+                                 description=f'[{track_added.title}]({track_added.uri})')
+            embed.set_thumbnail(url=track_added.thumbnail)
             await ctx.send(embed=embed)
         else:
             return await ctx.send('I am unable to load this video. Try a different one instead.')
@@ -354,10 +362,8 @@ class Music(commands.Cog):
         queue = self._format_tracks_for_pagination(player.queue)
         title = f'Music Queue for {ctx.guild}'
 
-        paginated_queue = EmbedListPaginator.paginate(ctx=ctx,
-                                                      items=queue,
-                                                      current_page=current_page,
-                                                      title=title)
+        paginated_queue = EmbedListPaginator.paginate(ctx=ctx, items=queue, current_page=current_page, title=title,
+                                                      items_per_page=15)
         await paginated_queue.send_message()
 
     @play.before_invoke

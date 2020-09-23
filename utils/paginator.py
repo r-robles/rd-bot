@@ -19,9 +19,11 @@ class PaginationError(Exception):
 
 
 class Paginator(ABC):
+    REWIND = '\u23ea'
     LEFT_ARROW = '\u2b05'
     RIGHT_ARROW = '\u27a1'
-    REACTION_EMOJIS = (LEFT_ARROW, RIGHT_ARROW)
+    FAST_FORWARD = '\u23e9'
+    REACTION_EMOJIS = (REWIND, LEFT_ARROW, RIGHT_ARROW, FAST_FORWARD)
 
     def __init__(self,
                  ctx: Context,
@@ -34,7 +36,7 @@ class Paginator(ABC):
 
         :param ctx: the Context object
         :param pages: the pages to display
-        :param current_page: the starting page (when the initial message is sent)
+        :param current_page: the 0-indexed starting page (when the initial message is sent)
         :param timeout: the maximum amount of time given to flip through pages
         :raises PaginationError: if there are no pages
         """
@@ -81,12 +83,17 @@ class Paginator(ABC):
                 break
 
             new_page = self.current_page
-            if str(reaction.emoji) == self.LEFT_ARROW:
+            emoji = str(reaction.emoji)
+            if emoji == self.REWIND:
+                new_page = 0
+            elif emoji == self.LEFT_ARROW:
                 log.debug('Left arrow emoji clicked. Attempting to move to the previous page.')
                 new_page = max(0, self.current_page - 1)
-            elif str(reaction.emoji) == self.RIGHT_ARROW:
+            elif emoji == self.RIGHT_ARROW:
                 log.debug('Right arrow emoji clicked. Attempting to move to the next page.')
                 new_page = min(len(self.pages) - 1, self.current_page + 1)
+            elif emoji == self.FAST_FORWARD:
+                new_page = len(self.pages) - 1
 
             if new_page != self.current_page:
                 self.current_page = new_page
@@ -110,7 +117,7 @@ class CodeBlockPaginator(Paginator):
         pages.append(page_content)
 
     @classmethod
-    def paginate(cls, ctx: Context, content: str):
+    def paginate(cls, ctx: Context, content: str, **kwargs):
         """Paginate a list of items to display in an embed.
 
         The list of items passed will be set in the description field of an Embed object.
@@ -140,8 +147,7 @@ class CodeBlockPaginator(Paginator):
         if current_page_content != cls.CODE_BLOCK_PREFIX:
             log.debug('There is still leftover page content. Creating new page.')
             cls._finish_page(current_page_content, pages)
-        return cls(ctx=ctx,
-                   pages=pages)
+        return cls(ctx=ctx, pages=pages, **kwargs)
 
 
 class EmbedListPaginator(Paginator):
@@ -164,7 +170,8 @@ class EmbedListPaginator(Paginator):
                  items: List[str],
                  items_per_page: int = 20,
                  current_page: int = 0,
-                 title: str = None):
+                 title: str = None,
+                 **kwargs):
         """Paginate a list of items to display in an embed.
 
         The list of items passed will be set in the description field of an Embed object.
@@ -203,6 +210,4 @@ class EmbedListPaginator(Paginator):
         total_items = len(items)
         cls._add_page_numbers(pages, total_items)
 
-        return cls(ctx=ctx,
-                   pages=pages,
-                   current_page=current_page)
+        return cls(ctx=ctx, pages=pages, current_page=current_page, **kwargs)
