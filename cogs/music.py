@@ -1,4 +1,3 @@
-import asyncio
 from enum import Enum
 import logging
 import re
@@ -167,7 +166,7 @@ class Music(commands.Cog):
             paginated_tracks = EmbedListPaginator.paginate(ctx=ctx, items=formatted_tracks, title=title,
                                                            items_per_page=15)
             # Prevent the pagination controller from blocking the play (at the end).
-            asyncio.create_task(paginated_tracks.send_message())
+            self.bot.loop.create_task(paginated_tracks.send_message())
         elif results['loadType'] == 'SEARCH_RESULT' or results['loadType'] == 'TRACK_LOADED':
             # Load only the first track
             track_added, = self._add_tracks_to_queue(player, results['tracks'][:1], ctx.author.id)
