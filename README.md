@@ -21,8 +21,12 @@ This is a Discord bot written in Python.
     4. Run the server using `java -jar Lavalink.jar`.
 3. Create and set up a virtual environment using `python3 -m venv venv`.
 4. Activate your virtual environment using `source venv/bin/activate`.
-5. Install all dependencies using `pip3 install -U -r requirements.txt`.
+5. Install all dependencies using `pip3 install -Ur requirements.txt`.
 6. Create a copy of `config.ini.example` and rename it to `config.ini`.
 7. Replace all values in `config.ini` with your Discord token, PostgreSQL
    database credentials, and Lavalink server values.
-8. Run the bot using `python3 main.py`.
+8. Create a copy of `alembic.ini.example` and rename it to `alembic.ini`.
+9. Go to `sqlalchemy.url` and replace `{username}`, `{password}`, `{host}`, `{port}`, and `{database}` with your
+   PostgreSQL credentials.
+10. Run `alembic upgrade head`.
+11. Run the bot using `python3 main.py`.

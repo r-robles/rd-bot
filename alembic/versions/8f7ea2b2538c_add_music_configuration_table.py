@@ -1,7 +1,7 @@
 """Add music configuration table
 
 Revision ID: 8f7ea2b2538c
-Revises: 
+Revises: 15bef6843f11
 Create Date: 2020-09-24 14:14:46.225538
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '8f7ea2b2538c'
-down_revision = None
+down_revision = '15bef6843f11'
 branch_labels = None
 depends_on = None
 

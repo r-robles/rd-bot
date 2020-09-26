@@ -4,10 +4,6 @@ from gino import Gino
 log = logging.getLogger(__name__)
 db = Gino()
 
-from database.models.prefix import Prefix
-from database.models.tag import Tag
-from database.models.musicconfiguration import MusicConfiguration
-
 
 def _get_connection_url(config):
     return ''.join((
@@ -26,7 +22,6 @@ async def connect_to_database(config):
 
     log.info('Connecting to PostgreSQL database.')
     await db.set_bind(connection)
-    await db.gino.create_all()
 
 
 async def disconnect_from_database():

@@ -5,3 +5,4 @@ arsenic==19.1
 lavalink==3.1.2
 gino==1.0.1
 alembic==1.4.3
+psycopg2==2.8.6
