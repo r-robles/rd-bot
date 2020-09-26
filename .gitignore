@@ -115,3 +115,5 @@ db/
 chromedriver.exe
 
 .idea
+
+alembic.ini

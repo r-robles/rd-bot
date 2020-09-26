@@ -6,6 +6,7 @@ db = Gino()
 
 from database.models.prefix import Prefix
 from database.models.tag import Tag
+from database.models.musicconfiguration import MusicConfiguration
 
 
 def _get_connection_url(config):
