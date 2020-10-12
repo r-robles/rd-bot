@@ -14,7 +14,7 @@ async def get_prefix(bot, ctx):
     guild_id = ctx.guild.id
 
     if guild_id in bot.prefixes:
-        return commands.when_mentioned_or(*bot.prefixes[guild_id])(bot, ctx)
+        return commands.when_mentioned_or(bot.prefixes[guild_id])(bot, ctx)
 
     model = await Prefix.get(guild_id)
     if not model:
