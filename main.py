@@ -2,6 +2,7 @@ import asyncio
 import configparser
 import logging
 import time
+import discord
 from core.bot import Bot
 from database import connect_to_database, disconnect_from_database
 
@@ -18,7 +19,8 @@ def set_up_logging():
 
 
 async def run_bot():
-    bot = Bot(config=config)
+    intents = discord.Intents.all()
+    bot = Bot(config=config, intents=intents)
     try:
         await bot.start(config['Discord']['token'])
     except KeyboardInterrupt:
